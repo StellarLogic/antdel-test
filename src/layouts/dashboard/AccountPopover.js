@@ -8,6 +8,8 @@ import { Link as RouterLink } from 'react-router-dom';
 import { alpha } from '@material-ui/core/styles';
 import { Button, Box, Divider, MenuItem, Typography, Avatar, IconButton } from '@material-ui/core';
 // components
+import { useDispatch, useSelector } from 'react-redux';
+import { logOut } from '../../actions/auth/auth';
 import MenuPopover from '../../components/MenuPopover';
 //
 import account from '../../_mocks_/account';
@@ -23,7 +25,7 @@ const MENU_OPTIONS = [
   {
     label: 'Profile',
     icon: personFill,
-    linkTo: '#'
+    linkTo: '/dashboard/profile'
   },
   {
     label: 'Settings',
@@ -37,6 +39,8 @@ const MENU_OPTIONS = [
 export default function AccountPopover() {
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const auth = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
   const handleOpen = () => {
     setOpen(true);
@@ -44,6 +48,8 @@ export default function AccountPopover() {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const { name, email } = auth?.user;
 
   return (
     <>
@@ -78,10 +84,10 @@ export default function AccountPopover() {
       >
         <Box sx={{ my: 1.5, px: 2.5 }}>
           <Typography variant="subtitle1" noWrap>
-            {account.displayName}
+            {name}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {account.email}
+            {email}
           </Typography>
         </Box>
 
@@ -110,7 +116,7 @@ export default function AccountPopover() {
         ))}
 
         <Box sx={{ p: 2, pt: 1.5 }}>
-          <Button fullWidth color="inherit" variant="outlined">
+          <Button fullWidth color="inherit" variant="outlined" onClick={() => dispatch(logOut)}>
             Logout
           </Button>
         </Box>

@@ -1,5 +1,7 @@
-import common from './logos/index'
+import { common } from './logos/index';
 
-export default = {
-    common
-}
+const images = {
+  common
+};
+
+export default images;

@@ -5,6 +5,7 @@ import { useFormik, Form, FormikProvider } from 'formik';
 import { Icon } from '@iconify/react';
 import eyeFill from '@iconify/icons-eva/eye-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
+import { serialize } from 'object-to-formdata';
 // material
 import {
   Link,
@@ -16,27 +17,40 @@ import {
   FormControlLabel
 } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
+import { object } from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { logIn } from '../../../actions/auth/auth';
 
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
 
   const LoginSchema = Yup.object().shape({
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
-    password: Yup.string().required('Password is required')
+    password: Yup.string().min(8).required('Password is required')
   });
 
   const formik = useFormik({
     initialValues: {
-      email: '',
-      password: '',
-      remember: true
+      email: 'antdel@antdel.com',
+      password: '123456789'
+      // remember: true
     },
     validationSchema: LoginSchema,
-    onSubmit: () => {
-      navigate('/dashboard', { replace: true });
+    onSubmit: ({ email, password }) => {
+      const formData = serialize({
+        user_name: email,
+        password
+      });
+
+      dispatch(logIn(formData)).then((res) => {
+        if (res) {
+          navigate('/dashboard', { replace: true });
+        }
+      });
     }
   });
 
@@ -80,11 +94,11 @@ export default function LoginForm() {
           />
         </Stack>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-          <FormControlLabel
+        <Stack direction="row" alignItems="flex-end" justifyContent="space-between" sx={{ my: 2 }}>
+          {/* <FormControlLabel
             control={<Checkbox {...getFieldProps('remember')} checked={values.remember} />}
             label="Remember me"
-          />
+          /> */}
 
           <Link component={RouterLink} variant="subtitle2" to="#">
             Forgot password?
