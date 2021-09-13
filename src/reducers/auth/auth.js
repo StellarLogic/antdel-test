@@ -2,7 +2,8 @@ import {
   SIGN_IN,
   GET_USER_PROFILE,
   GET_USER_PROFILE_FAIL,
-  LOG_OUT
+  LOG_OUT,
+  UPDATE_USER_PROFILE
 } from '../../actions/action-type';
 
 const initialState = {
@@ -20,6 +21,8 @@ export const auth = (state = initialState, { type, payload }) => {
     case GET_USER_PROFILE:
       return { ...state, ...payload };
     case GET_USER_PROFILE_FAIL:
+      return { ...state, ...payload };
+    case UPDATE_USER_PROFILE:
       return { ...state, ...payload };
     default:
       return state;

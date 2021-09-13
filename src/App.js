@@ -3,15 +3,15 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 // routes
 import { useDispatch, useSelector } from 'react-redux';
 import { LoadingButton } from '@material-ui/lab';
+import { ToastContainer } from 'react-toastify';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/styles';
-import axios from './utils/axios';
 import routes from './routes';
 // theme
 import ThemeConfig from './theme';
 // components
 import ScrollToTop from './components/ScrollToTop';
-import { getUserProfile } from './actions/auth/auth';
+import { getUserProfile } from './actions/profile/profile';
 // import { setAuthToken } from './utils/axios';
 
 // ----------------------------------------------------------------------
@@ -32,17 +32,15 @@ export default function App() {
     }
     const { token } = localStorage;
     if (token) {
-      dispatch(getUserProfile).then((res) => {
-        console.log(`res`, res);
-      });
+      dispatch(getUserProfile);
     }
-  }, []);
+  }, [auth.isAuthenticated, dispatch, navigate]);
 
   useEffect(() => {
     if (auth.isAuthenticated) {
       navigate('/dashboard/app');
     }
-  }, [auth]);
+  }, []);
 
   if (auth.loading)
     return (
@@ -53,6 +51,7 @@ export default function App() {
 
   return (
     <ThemeConfig>
+      <ToastContainer />
       <ScrollToTop />
       {routing}
     </ThemeConfig>

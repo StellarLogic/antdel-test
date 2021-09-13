@@ -1,4 +1,6 @@
 import Axios from 'axios';
+import { LOG_OUT } from '../actions/action-type';
+import { store } from '../store';
 
 const baseURL = process.env.REACT_APP_BASEURL;
 
@@ -26,6 +28,7 @@ axios.interceptors.response.use(
     const originalConfig = err.config;
 
     if (originalConfig.url !== '/user/refresh-token' && err.response) {
+      // console.log(`err`, err, err.response);
       // Access Token was expired
       if (err.response.status === 401 && !originalConfig._retry) {
         originalConfig._retry = true;
@@ -37,6 +40,13 @@ axios.interceptors.response.use(
               Authorization: token
             }
           });
+          console.log(`res`, res);
+          if (res.message === 'Unauthorized token') {
+            localStorage.clear();
+            return store.dispatch({
+              type: LOG_OUT
+            });
+          }
           localStorage.setItem('token', res?.data?.token);
 
           return axios(originalConfig);

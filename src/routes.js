@@ -11,6 +11,8 @@ import Blog from './pages/Blog';
 import User from './pages/User';
 import NotFound from './pages/Page404';
 import UserProfile from './pages/UserProfile/UserProfile';
+import Users from './pages/Users/Users';
+import Agent from './pages/Agent/Agent';
 
 // ----------------------------------------------------------------------
 
@@ -22,7 +24,9 @@ const routes = ({ isAuthenticated }) => [
     children: [
       { path: '/', element: <Navigate to="/dashboard/app" replace /> },
       { path: 'app', element: <DashboardApp /> },
+      { path: 'users', element: <Users /> },
       { path: 'user', element: <User /> },
+      { path: 'agent', element: <Agent /> },
       { path: 'products', element: <Products /> },
       { path: 'blog', element: <Blog /> },
       { path: 'profile', element: <UserProfile /> }
@@ -33,10 +37,10 @@ const routes = ({ isAuthenticated }) => [
     element: <LogoOnlyLayout />,
     children: [
       { path: 'login', element: <Login /> },
+      { path: '*', element: <Navigate to="/404" /> },
+      { path: '404', element: <NotFound /> }
       // { path: 'register', element: <Register /> },
-      // { path: '404', element: <NotFound /> },
       // { path: '/', element: <Navigate to="/dashboard" /> },
-      { path: '*', element: <Navigate to="/404" /> }
     ]
   },
 

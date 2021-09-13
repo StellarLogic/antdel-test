@@ -1,4 +1,5 @@
-import { Link as RouterLink, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 // material
 import { styled } from '@material-ui/core/styles';
 // components
@@ -21,10 +22,16 @@ const HeaderStyle = styled('header')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function LogoOnlyLayout() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate('/login');
+  }, []);
+
   return (
     <>
       <HeaderStyle>
-        <RouterLink to="/">
+        <RouterLink to="">
           <Logo />
         </RouterLink>
       </HeaderStyle>

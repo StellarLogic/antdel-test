@@ -16,12 +16,22 @@ const sidebarConfig = [
     title: 'dashboard',
     path: '/dashboard/app',
     icon: getIcon(pieChart2Fill)
+  },
+  {
+    title: 'user',
+    path: '/dashboard/user',
+    icon: getIcon(peopleFill)
+  },
+  {
+    title: 'user',
+    path: '/dashboard/users',
+    icon: getIcon(peopleFill)
+  },
+  {
+    title: 'agent',
+    path: '/dashboard/agent',
+    icon: getIcon(peopleFill)
   }
-  // {
-  //   title: 'user',
-  //   path: '/dashboard/user',
-  //   icon: getIcon(peopleFill)
-  // },
   // {
   //   title: 'product',
   //   path: '/dashboard/products',
