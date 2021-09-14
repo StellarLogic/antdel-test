@@ -34,6 +34,8 @@ import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import { countries } from './phone-code';
 import { tags } from './tags';
 import { useStyles, Label, InputWrapper, Listbox, StyledTag, Android12Switch } from './style';
+import { addAgent } from '../../../actions/agent/agent';
+import { notification } from '../../../utils/notification';
 
 function Tag(props) {
   const { label, onDelete, ...other } = props;
@@ -44,6 +46,38 @@ function Tag(props) {
     </div>
   );
 }
+
+const SUPPORTED_FORMATS = ['image/jpg', 'image/jpeg', 'image/png'];
+
+const initialValues = {
+  user_name: '',
+  name: '',
+  email: '',
+  phone_country: '',
+  phone: '',
+  password: '',
+  assign_team: '',
+  agent_permission: '',
+  is_vat: false,
+  image: '',
+  vat_image: '',
+  tags: []
+};
+
+// initialValues = {
+//   user_name: 'Adela_Berge22',
+//   name: 'Benjamin Cassin',
+//   email: 'Gardner.Baumbach6@gmail.com',
+//   phone_country: '91',
+//   phone: '8130519266',
+//   password: 'Gardner.Baumbach6@gmail.com',
+//   assign_team: '1',
+//   agent_permission: '2',
+//   is_vat: false,
+//   image: '',
+//   vat_image: '',
+//   tags: []
+// };
 
 const AddAgent = () => {
   const {
@@ -58,7 +92,7 @@ const AddAgent = () => {
     focused,
     setAnchorEl
   } = useAutocomplete({
-    id: 'customized-hook-demo',
+    id: 'customized-hook-tag',
     defaultValue: [tags[1]],
     multiple: true,
     options: tags,
@@ -79,43 +113,90 @@ const AddAgent = () => {
       .max(10, 'Invalid phone'),
     user_name: Yup.string().required('User Name is required'),
     name: Yup.string().required('Name is required'),
-    password: Yup.string().required('Password is required')
+    password: Yup.string().required('Password is required'),
+    assign_team: Yup.string().required('Assign Team is required'),
+    agent_permission: Yup.string().required('Agent Permisison is required'),
+    image: Yup.mixed()
+      .required('Image is required')
+      .test('fileSize', 'File Size is too large', (value) => {
+        console.log(`value-1`, value?.size);
+        return value && value.size <= 2 * 1024 * 1024;
+      })
+      .test('fileType', 'Unsupported File Format', (value) => {
+        console.log('value-2', value);
+        return value && SUPPORTED_FORMATS.includes(value.type);
+      }),
+    vat_image: Yup.string().when('is_vat', {
+      // eslint-disable-next-line camelcase
+      is: (is_vat) => is_vat,
+      then: Yup.mixed()
+        .required('Image is required')
+        .test('fileSize', 'File Size is too large', (value) => {
+          console.log(`value-1`, value?.size);
+          return value && value.size <= 2 * 1024 * 1024;
+        })
+        .test('fileType', 'Unsupported File Format', (value) => {
+          console.log('value-2', value);
+          return value && SUPPORTED_FORMATS.includes(value.type);
+        })
+    })
   });
 
   const formik = useFormik({
-    initialValues: {
-      user_name: 'Adela_Berge22',
-      name: 'Benjamin Cassin',
-      email: 'Gardner.Baumbach6@gmail.com',
-      phone_country: '91',
-      phone: '8130519266',
-      password: 'Gardner.Baumbach6@gmail.com',
-      assign_team: '1',
-      agent_permission: '2',
-      vat: false,
-      image: '',
-      vat_image: '',
-      tags: []
-    },
+    initialValues,
     validationSchema: LoginSchema,
     // eslint-disable-next-line camelcase
-    onSubmit: ({ name, email, phone_country, phone }) => {
-      //   const changesProperties = {};
-      //   if (name !== user.name) changesProperties.name = name;
-      //   if (email !== user.email) changesProperties.email = email;
-      //   // eslint-disable-next-line camelcase
-      //   if (phone_country_id !== user.phone_country_id)
-      //     // eslint-disable-next-line camelcase
-      //     changesProperties.phone_country_id = phone_country_id;
-      //   if (phone !== user.phone) changesProperties.phone = phone;
-      //   const formData = serialize(changesProperties);
-      //   dispatch(updateUserProfile(formData));
+    onSubmit: ({
+      // eslint-disable-next-line camelcase
+      user_name,
+      name,
+      email,
+      // eslint-disable-next-line camelcase
+      phone_country,
+      phone,
+      password,
+      // eslint-disable-next-line camelcase
+      assign_team,
+      // eslint-disable-next-line camelcase
+      agent_permission,
+      // eslint-disable-next-line camelcase
+      is_vat,
+      // eslint-disable-next-line camelcase
+      vat_image,
+      image,
+      tags
+    }) => {
+      const payload = {
+        user_name,
+        name,
+        email,
+        phone_country,
+        phone,
+        password,
+        assign_team,
+        agent_permission,
+        image,
+        tags
+      };
+      // eslint-disable-next-line camelcase
+      if (is_vat) {
+        payload.is_vat = 1;
+        // eslint-disable-next-line camelcase
+        payload.vat_image = vat_image;
+      } else {
+        payload.is_vat = 0;
+      }
+
+      const formData = serialize(payload);
+      return dispatch(addAgent(formData)).then((res) => {
+        notification.success('Agent Added');
+      });
     }
   });
 
   const { errors, touched, setFieldValue, values, isSubmitting, handleSubmit, getFieldProps } =
     formik;
-  console.log(`values`, values);
+  console.log(`values-3`, getFieldProps('image'), errors, touched);
   return (
     <div className={classes.formContainer}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
@@ -141,6 +222,7 @@ const AddAgent = () => {
                       }}
                     />
                   </label>
+                  {errors.image && <span className={classes.errorClass}>{errors.image}</span>}
                 </div>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -266,15 +348,15 @@ const AddAgent = () => {
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
-                  control={<Android12Switch checked={values.vat} />}
+                  control={<Android12Switch checked={values.is_vat} />}
                   label="VAT"
                   onChange={({ target }) => {
-                    formik.setFieldValue('vat', target.checked);
+                    formik.setFieldValue('is_vat', target.checked);
                     if (!target.checked) formik.setFieldValue('vat_image', '');
                   }}
                 />
               </Grid>
-              {values.vat && (
+              {values.is_vat && (
                 <>
                   <Grid item xs={12} md={6}>
                     <div className={classes.imageWrapper}>
@@ -305,14 +387,7 @@ const AddAgent = () => {
               )}
               <Grid item xs={12}>
                 <div className={classes.tagsWapper}>
-                  <InputWrapper
-                    ref={setAnchorEl}
-                    onChange={(event, newValue) => {
-                      console.log(`newValue`, newValue);
-                      // formik.setFieldValue('tags', newValue?.phone);
-                    }}
-                    className={focused ? 'focused' : ''}
-                  >
+                  <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
                     {value.map((option, index) => (
                       <StyledTag label={option.name} {...getTagProps({ index })} />
                     ))}

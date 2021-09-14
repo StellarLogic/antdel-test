@@ -3,9 +3,10 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 // routes
 import { useDispatch, useSelector } from 'react-redux';
 import { LoadingButton } from '@material-ui/lab';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, Flip } from 'react-toastify';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/styles';
+
 import routes from './routes';
 // theme
 import ThemeConfig from './theme';
@@ -51,7 +52,18 @@ export default function App() {
 
   return (
     <ThemeConfig>
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        transition={Flip}
+      />
       <ScrollToTop />
       {routing}
     </ThemeConfig>

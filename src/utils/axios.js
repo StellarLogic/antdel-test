@@ -28,7 +28,7 @@ axios.interceptors.response.use(
     const originalConfig = err.config;
 
     if (originalConfig.url !== '/user/refresh-token' && err.response) {
-      // console.log(`err`, err, err.response);
+      console.log(`err`, err, err.response);
       // Access Token was expired
       if (err.response.status === 401 && !originalConfig._retry) {
         originalConfig._retry = true;

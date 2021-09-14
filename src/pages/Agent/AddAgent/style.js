@@ -47,6 +47,14 @@ export const useStyles = makeStyles((theme) => ({
     height: 300,
     width: `100%`,
     objectFit: 'contain'
+  },
+  errorClass: {
+    lineHeight: 1.5,
+    fontSize: '0.75rem',
+    fontWeight: 400,
+    textAlign: 'left',
+    margin: '0 14px',
+    color: '#FF4842'
   }
 }));
 
