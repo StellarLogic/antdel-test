@@ -6,7 +6,7 @@ const baseURL = process.env.REACT_APP_BASEURL;
 
 const axios = Axios.create({
   baseURL,
-  timeout: 1000
+  timeout: 5000
 });
 
 axios.interceptors.request.use(
@@ -28,7 +28,7 @@ axios.interceptors.response.use(
     const originalConfig = err.config;
 
     if (originalConfig.url !== '/user/refresh-token' && err.response) {
-      console.log(`err`, err, err.response);
+      // console.log(`err-1`, err, err.response);
       // Access Token was expired
       if (err.response.status === 401 && !originalConfig._retry) {
         originalConfig._retry = true;

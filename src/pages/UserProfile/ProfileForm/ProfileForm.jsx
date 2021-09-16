@@ -1,21 +1,10 @@
 import React from 'react';
 import { connect, useDispatch } from 'react-redux';
 import * as Yup from 'yup';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { serialize } from 'object-to-formdata';
 // material
-import {
-  Link,
-  Stack,
-  Checkbox,
-  TextField,
-  IconButton,
-  InputAdornment,
-  FormControlLabel,
-  Select,
-  MenuItem
-} from '@material-ui/core';
+import { Stack, TextField, Select, MenuItem } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
 import Grid from '@material-ui/core/Grid';
 
@@ -64,7 +53,7 @@ const ProfileForm = ({ user }) => {
     }
   });
 
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
+  const { errors, touched, dirty, values, isSubmitting, handleSubmit, getFieldProps } = formik;
 
   const form = (
     <div className={classes.formContainer}>
@@ -142,6 +131,7 @@ const ProfileForm = ({ user }) => {
               type="submit"
               variant="contained"
               loading={isSubmitting}
+              disabled={!dirty}
               sx={{ my: 2 }}
             >
               Update

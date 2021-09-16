@@ -1,22 +1,12 @@
 import React from 'react';
-import { connect, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { serialize } from 'object-to-formdata';
 // material
-import {
-  Link,
-  Stack,
-  Checkbox,
-  TextField,
-  IconButton,
-  InputAdornment,
-  FormControlLabel
-} from '@material-ui/core';
+import { Stack, TextField } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
 import Grid from '@material-ui/core/Grid';
-
 import { useStyles } from './style';
 import { updatePassword } from '../../../actions/profile/profile';
 
@@ -26,8 +16,7 @@ const ProfilePasswordChange = () => {
 
   const LoginSchema = Yup.object().shape({
     old_password: Yup.string().required('Current Password is required'),
-    new_password: Yup.string().required('New Password is required'),
-    // .min(10, 'Minimum 8 characters'),
+    new_password: Yup.string().required('New Password is required').min(8, 'Minimum 8 characters'),
     confirm_password: Yup.string()
       .required('Confirm Password is required')
       .oneOf([Yup.ref('new_password'), null], 'Passwords must match')
@@ -47,11 +36,11 @@ const ProfilePasswordChange = () => {
         new_password,
         confirm_password
       });
-      dispatch(updatePassword(formData));
+      dispatch(updatePassword(formData)).then((res) => formik.setSubmitting(false));
     }
   });
 
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
+  const { errors, touched, dirty, values, isSubmitting, handleSubmit, getFieldProps } = formik;
 
   const form = (
     <div className={classes.formContainer}>
@@ -98,6 +87,7 @@ const ProfilePasswordChange = () => {
               variant="contained"
               loading={isSubmitting}
               sx={{ my: 2 }}
+              disabled={!dirty}
             >
               Update
             </LoadingButton>

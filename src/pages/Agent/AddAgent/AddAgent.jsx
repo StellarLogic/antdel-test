@@ -118,28 +118,41 @@ const AddAgent = () => {
     agent_permission: Yup.string().required('Agent Permisison is required'),
     image: Yup.mixed()
       .required('Image is required')
-      .test('fileSize', 'File Size is too large', (value) => {
-        console.log(`value-1`, value?.size);
-        return value && value.size <= 2 * 1024 * 1024;
-      })
-      .test('fileType', 'Unsupported File Format', (value) => {
-        console.log('value-2', value);
-        return value && SUPPORTED_FORMATS.includes(value.type);
-      }),
-    vat_image: Yup.string().when('is_vat', {
-      // eslint-disable-next-line camelcase
-      is: (is_vat) => is_vat,
+      .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
+      .test(
+        'fileType',
+        'Unsupported File Format',
+        (value) => value && SUPPORTED_FORMATS.includes(value.type)
+      ),
+    is_vat: Yup.boolean(),
+    vat_image: Yup.mixed().when('is_vat', {
+      is: true,
       then: Yup.mixed()
-        .required('Image is required')
-        .test('fileSize', 'File Size is too large', (value) => {
-          console.log(`value-1`, value?.size);
-          return value && value.size <= 2 * 1024 * 1024;
-        })
-        .test('fileType', 'Unsupported File Format', (value) => {
-          console.log('value-2', value);
-          return value && SUPPORTED_FORMATS.includes(value.type);
-        })
+        .required('Vat Image is required')
+        .test(
+          'fileSize',
+          'File Size is too large',
+          (value) => value && value.size <= 2 * 1024 * 1024
+        )
+        .test(
+          'fileType',
+          'Unsupported File Format',
+          (value) => value && SUPPORTED_FORMATS.includes(value.type)
+        ),
+      other: Yup.mixed()
     })
+
+    //   then: Yup.mixed()
+    //     .required('Image is required')
+    //     .test('fileSize', 'File Size is too large', (value) => {
+    //       console.log(`value-1`, value?.size);
+    //       return value && value.size <= 2 * 1024 * 1024;
+    //     })
+    //     .test('fileType', 'Unsupported File Format', (value) => {
+    //       console.log('value-2', value);
+    //       return value && SUPPORTED_FORMATS.includes(value.type);
+    //     })
+    // })
   });
 
   const formik = useFormik({
@@ -189,14 +202,22 @@ const AddAgent = () => {
 
       const formData = serialize(payload);
       return dispatch(addAgent(formData)).then((res) => {
-        notification.success('Agent Added');
+        // notification.success('Agent Added');
       });
     }
   });
 
-  const { errors, touched, setFieldValue, values, isSubmitting, handleSubmit, getFieldProps } =
-    formik;
-  console.log(`values-3`, getFieldProps('image'), errors, touched);
+  const {
+    errors,
+    touched,
+    dirty,
+    setFieldValue,
+    values,
+    isSubmitting,
+    handleSubmit,
+    getFieldProps
+  } = formik;
+
   return (
     <div className={classes.formContainer}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
@@ -222,7 +243,9 @@ const AddAgent = () => {
                       }}
                     />
                   </label>
-                  {errors.image && <span className={classes.errorClass}>{errors.image}</span>}
+                  {touched.image && errors.image && (
+                    <span className={classes.errorClass}>{errors.image}</span>
+                  )}
                 </div>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -372,6 +395,9 @@ const AddAgent = () => {
                           }}
                         />
                       </label>
+                      {touched.vat_image && errors.vat_image && (
+                        <span className={classes.errorClass}>{errors.vat_image}</span>
+                      )}
                     </div>
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -408,6 +434,7 @@ const AddAgent = () => {
             </Grid>
           </Stack>
           <div className={classes.btnWapper}>
+            {console.log(`dirty`, dirty, errors)}
             <LoadingButton
               // fullWidth
               size="large"
@@ -415,6 +442,7 @@ const AddAgent = () => {
               variant="contained"
               loading={isSubmitting}
               sx={{ mt: 2 }}
+              disabled={!dirty}
             >
               Add
             </LoadingButton>
