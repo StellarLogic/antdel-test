@@ -25,6 +25,8 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (res) => res,
   async (err) => {
+    // eslint-disable-next-line no-debugger
+    debugger;
     const originalConfig = err.config;
 
     if (originalConfig.url !== '/user/refresh-token' && err.response) {
@@ -40,8 +42,8 @@ axios.interceptors.response.use(
               Authorization: token
             }
           });
-          console.log(`res`, res);
-          if (res.message === 'Unauthorized token') {
+          // console.log(`res-1`, res);
+          if (res.data.status === 401) {
             localStorage.clear();
             return store.dispatch({
               type: LOG_OUT

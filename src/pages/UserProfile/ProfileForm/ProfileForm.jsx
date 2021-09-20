@@ -38,18 +38,26 @@ const ProfileForm = ({ user }) => {
     validationSchema: LoginSchema,
     // eslint-disable-next-line camelcase
     onSubmit: ({ name, email, phone_country_id, phone }) => {
-      const changesProperties = {};
-      if (name !== user.name) changesProperties.name = name;
-      if (email !== user.email) changesProperties.email = email;
-      // eslint-disable-next-line camelcase
-      if (phone_country_id !== user.phone_country_id)
-        // eslint-disable-next-line camelcase
-        changesProperties.phone_country_id = phone_country_id;
-      if (phone !== user.phone) changesProperties.phone = phone;
+      // const changesProperties = {};
+      // if (name !== user.name) changesProperties.name = name;
+      // if (email !== user.email) changesProperties.email = email;
+      // // eslint-disable-next-line camelcase
+      // if (phone_country_id !== user.phone_country_id)
+      //   // eslint-disable-next-line camelcase
+      //   changesProperties.phone_country_id = phone_country_id;
+      // if (phone !== user.phone) changesProperties.phone = phone;
+      const payload = {
+        name,
+        email,
+        phone_country_id,
+        phone
+      };
 
-      const formData = serialize(changesProperties);
+      const formData = serialize(payload);
 
-      dispatch(updateUserProfile(formData));
+      dispatch(updateUserProfile(formData)).then((res) => {
+        if (res) formik.setSubmitting(false);
+      });
     }
   });
 

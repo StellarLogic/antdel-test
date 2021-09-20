@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import * as Yup from 'yup';
+import PropTypes from 'prop-types';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { serialize } from 'object-to-formdata';
@@ -31,11 +32,11 @@ import Box from '@mui/material/Box';
 import Autocomplete from '@mui/material/Autocomplete';
 import { TextField as MuiTextField } from '@mui/material';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import { countries } from './phone-code';
 import { tags } from './tags';
 import { useStyles, Label, InputWrapper, Listbox, StyledTag, Android12Switch } from './style';
 import { addAgent } from '../../../actions/agent/agent';
-import { notification } from '../../../utils/notification';
+import { fetchTags, fetchTeams } from '../../../actions/config/config';
+import { countries } from './phone-code';
 
 function Tag(props) {
   const { label, onDelete, ...other } = props;
@@ -79,7 +80,7 @@ const initialValues = {
 //   tags: []
 // };
 
-const AddAgent = () => {
+const AddAgent = ({ config }) => {
   const {
     getRootProps,
     getInputLabelProps,
@@ -93,14 +94,19 @@ const AddAgent = () => {
     setAnchorEl
   } = useAutocomplete({
     id: 'customized-hook-tag',
-    defaultValue: [tags[1]],
+    // defaultValue: [tags[1]],
     multiple: true,
-    options: tags,
+    options: config.tags.list,
     getOptionLabel: (option) => option.name
   });
 
   const classes = useStyles();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchTags);
+    dispatch(fetchTeams);
+  }, [dispatch]);
 
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -108,6 +114,7 @@ const AddAgent = () => {
   const LoginSchema = Yup.object().shape({
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
     phone: Yup.string()
+      .required('Phone Number is required')
       .matches(phoneRegExp, 'Phone number is not valid')
       .min(10, 'Invalid phone')
       .max(10, 'Invalid phone'),
@@ -141,18 +148,6 @@ const AddAgent = () => {
         ),
       other: Yup.mixed()
     })
-
-    //   then: Yup.mixed()
-    //     .required('Image is required')
-    //     .test('fileSize', 'File Size is too large', (value) => {
-    //       console.log(`value-1`, value?.size);
-    //       return value && value.size <= 2 * 1024 * 1024;
-    //     })
-    //     .test('fileType', 'Unsupported File Format', (value) => {
-    //       console.log('value-2', value);
-    //       return value && SUPPORTED_FORMATS.includes(value.type);
-    //     })
-    // })
   });
 
   const formik = useFormik({
@@ -207,6 +202,10 @@ const AddAgent = () => {
     }
   });
 
+  const handleSelectChange = ({ target: { value } }, name) => {
+    formik.setFieldValue(name, value);
+  };
+
   const {
     errors,
     touched,
@@ -217,7 +216,7 @@ const AddAgent = () => {
     handleSubmit,
     getFieldProps
   } = formik;
-
+  console.log(`config`, values);
   return (
     <div className={classes.formContainer}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
@@ -340,7 +339,7 @@ const AddAgent = () => {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  type="text"
+                  type="number"
                   label="Phone Number"
                   {...getFieldProps('phone')}
                   error={Boolean(touched.phone && errors.phone)}
@@ -350,24 +349,44 @@ const AddAgent = () => {
               {/* </Grid> */}
               {/* </Grid> */}
               <Grid item xs={12} md={6}>
-                <TextField
+                {/* <TextField
                   fullWidth
                   type="text"
                   label="Assigned Team"
                   {...getFieldProps('assign_team')}
                   error={Boolean(touched.assign_team && errors.assign_team)}
                   helperText={touched.assign_team && errors.assign_team}
-                />
+                /> */}
+                <InputLabel id="assign_team">Assigned Team</InputLabel>
+                <Select
+                  labelId="assign_team"
+                  id="assign_team"
+                  label="Assigned Team"
+                  onChange={(e) => handleSelectChange(e, 'assign_team')}
+                  placeholder="Assigned Team"
+                  // autoWidth
+                  className={classes.select}
+                >
+                  {config.teams.list.map((team) => (
+                    <MenuItem value={team.id}>{team.name}</MenuItem>
+                  ))}
+                </Select>
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="text"
+                <InputLabel id="agent_permission">Assigned Team</InputLabel>
+                <Select
+                  labelId="agent_permission"
+                  id="agent_permission"
                   label="Agent Permission"
-                  {...getFieldProps('agent_permission')}
-                  error={Boolean(touched.agent_permission && errors.agent_permission)}
-                  helperText={touched.agent_permission && errors.agent_permission}
-                />
+                  onChange={(e) => handleSelectChange(e, 'agent_permission')}
+                  placeholder="Agent Permission"
+                  // autoWidth
+                  className={classes.select}
+                >
+                  {config.teams.list.map((team) => (
+                    <MenuItem value={team.id}>{team.name}</MenuItem>
+                  ))}
+                </Select>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
@@ -434,7 +453,6 @@ const AddAgent = () => {
             </Grid>
           </Stack>
           <div className={classes.btnWapper}>
-            {console.log(`dirty`, dirty, errors)}
             <LoadingButton
               // fullWidth
               size="large"
@@ -453,4 +471,12 @@ const AddAgent = () => {
   );
 };
 
-export default AddAgent;
+AddAgent.propTypes = {
+  config: PropTypes.object
+};
+
+const mapStateToProps = (state) => ({
+  config: state.config
+});
+
+export default connect(mapStateToProps)(AddAgent);

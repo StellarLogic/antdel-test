@@ -55,6 +55,9 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: 'left',
     margin: '0 14px',
     color: '#FF4842'
+  },
+  select: {
+    width: '100%'
   }
 }));
 

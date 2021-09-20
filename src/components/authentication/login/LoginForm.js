@@ -47,6 +47,7 @@ export default function LoginForm() {
       });
 
       dispatch(logIn(formData)).then((res) => {
+        formik.setSubmitting(false);
         if (res) {
           navigate('/dashboard', { replace: true });
         }
