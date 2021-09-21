@@ -26,11 +26,6 @@ const Agent = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const formData = serialize({ page: 2, per_page: 10 });
-    dispatch(getAgentListing(formData));
-  }, []);
-
   const handleAgentModal = (value) => {
     setAddAgentModal(value);
   };

@@ -25,25 +25,23 @@ export const addAgent = (payload) => async (dispatch) => {
   }
 };
 
-export const getAgentListing = (paylaod) => async (dispatch) => {
+export const getAgentListing = (currentPage, perPage) => async (dispatch) => {
   try {
-    const { data } = await axios.get(`/user/agent_listing`, paylaod);
-    console.log(`data`, data);
-    const cb = () => {
+    const { data } = await axios.get(`user/agent_listing?page=${currentPage}&per_page=${perPage}`);
+
+    const callBack = () =>
       dispatch({
         type: GET_AGENT_LIST,
-        payload: data
+        payload: {
+          loading: false,
+          data: { ...data.data, total_page: data.total_page }
+        }
       });
-    };
 
-    handleResponseError(data, cb);
+    handleResponseError(data, callBack);
 
     return data;
   } catch (error) {
-    console.log(`error`, error);
-    dispatch({
-      type: GET_USER_PROFILE_FAIL,
-      payload: { loading: false, isAuthenticated: true, user: {} }
-    });
+    return console.log(`error`, error);
   }
 };

@@ -5,9 +5,10 @@ const initialState = {
   data: {}
 };
 
-export const agent = (state = initialState, { type, payload }) => {
+export const agents = (state = initialState, { type, payload }) => {
   switch (type) {
     case GET_AGENT_LIST:
+      console.log(payload);
       return { ...state, ...payload };
 
     default:

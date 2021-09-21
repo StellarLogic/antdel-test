@@ -1,7 +1,7 @@
 import { notification } from './notification';
 
 export const handleResponseError = (data = {}, cb = () => {}) => {
-  console.log(`handle`, data);
+  console.log(`handle`, { data, cb });
   if (data.status === 0) {
     if (data.message !== Array) {
       return notification.error(data.message);
@@ -10,7 +10,8 @@ export const handleResponseError = (data = {}, cb = () => {}) => {
   }
 
   if (data.message !== Array) {
-    return notification.success(data.message);
+    notification.success(data.message);
+    return cb();
   }
   data.error.map((error) => notification.success(error?.msg));
   return cb();

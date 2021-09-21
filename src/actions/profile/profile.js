@@ -35,8 +35,8 @@ export const getUserProfile = async (dispatch) => {
       type: GET_USER_PROFILE_FAIL,
       payload: { loading: false, isAuthenticated: false, user: {} }
     });
-    const { data } = error.response;
-    if (data?.error) return data.error.map((error) => notification.error(error?.msg));
+    // const { data } = error.response;
+    // if (data?.error) return data.error.map((error) => notification.error(error?.msg));
   }
 };
 

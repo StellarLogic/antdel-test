@@ -1,8 +1,9 @@
+/* eslint-disable camelcase */
 import { filter } from 'lodash';
 
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Link as RouterLink } from 'react-router-dom';
 // material
 import {
@@ -23,13 +24,15 @@ import {
   Box
 } from '@material-ui/core';
 // components
+import { useDispatch, connect } from 'react-redux';
+import { getAgentListing } from '../../../actions/agent/agent';
 import Page from '../../../components/Page';
 import Label from '../../../components/Label';
 import Scrollbar from '../../../components/Scrollbar';
 import SearchNotFound from '../../../components/SearchNotFound';
 import { UserListHead, UserListToolbar, UserMoreMenu } from '../../../components/_dashboard/user';
 
-import agents from '../data';
+import dummy from '../data';
 import { useStyles } from './style';
 
 function descendingComparator(a, b, orderBy) {
@@ -48,7 +51,7 @@ function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function applySortFilter(array, comparator, query) {
+function applySortFilter(array = [], comparator, query) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -68,7 +71,12 @@ const TABLE_HEAD = [
   { id: '' }
 ];
 
-const AgentList = () => {
+const AgentList = ({
+  agents: {
+    loading,
+    data: { rows: agents }
+  }
+}) => {
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
   const [selected, setSelected] = useState([]);
@@ -77,6 +85,12 @@ const AgentList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const classes = useStyles();
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAgentListing(page, rowsPerPage));
+  }, [dispatch, page, rowsPerPage]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -124,12 +138,14 @@ const AgentList = () => {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - agents.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - agents?.length) : 0;
 
   const filteredUsers = applySortFilter(agents, getComparator(order, orderBy), filterName);
 
   const isUserNotFound = filteredUsers.length === 0;
 
+  if (loading) return <p>Loading</p>;
+  console.log(`filteredUsers`, filteredUsers);
   return (
     <Page>
       <Card className={classes.card}>
@@ -154,10 +170,10 @@ const AgentList = () => {
               <TableBody>
                 {filteredUsers
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row) => {
-                    const { id, name, avatar, username, email, phone } = row;
+                  .map((row, index) => {
+                    const { id, name, user_name, email, phone, phone_country_id } = row;
+                    const { avatar } = dummy[index];
                     const isItemSelected = selected.indexOf(name) !== -1;
-
                     return (
                       <TableRow
                         hover
@@ -181,9 +197,12 @@ const AgentList = () => {
                             </Typography>
                           </Stack>
                         </TableCell>
-                        <TableCell align="left">{username}</TableCell>
+
+                        <TableCell align="left">{user_name}</TableCell>
                         <TableCell align="left">{email}</TableCell>
-                        <TableCell align="left">{phone}</TableCell>
+                        <TableCell align="left">
+                          +{phone_country_id}-{phone}
+                        </TableCell>
                         <TableCell align="right">
                           <UserMoreMenu />
                         </TableCell>
@@ -223,4 +242,12 @@ const AgentList = () => {
   );
 };
 
-export default AgentList;
+AgentList.propTypes = {
+  agents: PropTypes.object
+};
+
+const mapStateToProps = (state) => ({
+  agents: state.agents
+});
+
+export default connect(mapStateToProps)(AgentList);

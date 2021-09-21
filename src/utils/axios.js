@@ -49,6 +49,7 @@ axios.interceptors.response.use(
               type: LOG_OUT
             });
           }
+
           localStorage.setItem('token', res?.data?.token);
 
           return axios(originalConfig);
