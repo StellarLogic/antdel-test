@@ -40,7 +40,7 @@ const Agent = () => {
     >
       <DialogContent>
         <Box sx={classes.modal}>
-          <AddAgent />
+          <AddAgent handleClose={() => handleAgentModal(false)} />
         </Box>
       </DialogContent>
     </Dialog>
@@ -50,19 +50,7 @@ const Agent = () => {
     <div className={classes.root}>
       {modal}
       <Container>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-          <Typography variant="h4" gutterBottom>
-            Agents
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => handleAgentModal(true)}
-            startIcon={<Icon icon={plusFill} />}
-          >
-            New Agent
-          </Button>
-        </Stack>
-        <AgentList />
+        <AgentList handleAgentModal={() => handleAgentModal(true)} />
       </Container>
     </div>
   );

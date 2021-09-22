@@ -23,9 +23,11 @@ import {
   Modal,
   Box
 } from '@material-ui/core';
+import plusFill from '@iconify/icons-eva/plus-fill';
+import { Icon } from '@iconify/react';
 // components
 import { useDispatch, connect } from 'react-redux';
-import { getAgentListing } from '../../../actions/agent/agent';
+import { deleteAgent, getAgentListing } from '../../../actions/agent/agent';
 import Page from '../../../components/Page';
 import Label from '../../../components/Label';
 import Scrollbar from '../../../components/Scrollbar';
@@ -72,9 +74,10 @@ const TABLE_HEAD = [
 ];
 
 const AgentList = ({
+  handleAgentModal,
   agents: {
     loading,
-    data: { rows: agents }
+    data: { rows: agents, count, total_page }
   }
 }) => {
   const [page, setPage] = useState(0);
@@ -144,16 +147,30 @@ const AgentList = ({
 
   const isUserNotFound = filteredUsers.length === 0;
 
+  const handleDelete = (id) => {
+    console.log(`id`, id);
+    const updatedList = agents.filter((agent) => agent.id !== id);
+    dispatch(deleteAgent(id, updatedList));
+  };
+
   if (loading) return <p>Loading</p>;
   console.log(`filteredUsers`, filteredUsers);
   return (
     <Page>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+        <Typography variant="h4" gutterBottom>
+          Agents
+        </Typography>
+        <Button variant="contained" onClick={handleAgentModal} startIcon={<Icon icon={plusFill} />}>
+          New Agent
+        </Button>
+      </Stack>
       <Card className={classes.card}>
         {/* <UserListToolbar
-            numSelected={selected.length}
-            filterName={filterName}
-            onFilterName={handleFilterByName}
-          /> */}
+          numSelected={selected.length}
+          filterName={filterName}
+          onFilterName={handleFilterByName}
+        /> */}
 
         <Scrollbar>
           <TableContainer sx={{ minWidth: 800 }}>
@@ -168,11 +185,12 @@ const AgentList = ({
                 onSelectAllClick={handleSelectAllClick}
               />
               <TableBody>
-                {filteredUsers
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row, index) => {
+                {
+                  // filteredUsers
+                  // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  agents.map((row, index) => {
                     const { id, name, user_name, email, phone, phone_country_id } = row;
-                    const { avatar } = dummy[index];
+                    const { avatar } = dummy[1];
                     const isItemSelected = selected.indexOf(name) !== -1;
                     return (
                       <TableRow
@@ -204,11 +222,12 @@ const AgentList = ({
                           +{phone_country_id}-{phone}
                         </TableCell>
                         <TableCell align="right">
-                          <UserMoreMenu />
+                          <UserMoreMenu onClickDelete={() => handleDelete(id)} />
                         </TableCell>
                       </TableRow>
                     );
-                  })}
+                  })
+                }
                 {emptyRows > 0 && (
                   <TableRow style={{ height: 53 * emptyRows }}>
                     <TableCell colSpan={6} />
@@ -231,7 +250,7 @@ const AgentList = ({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={agents.length}
+          count={count}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -243,7 +262,8 @@ const AgentList = ({
 };
 
 AgentList.propTypes = {
-  agents: PropTypes.object
+  agents: PropTypes.object,
+  handleAgentModal: PropTypes.func
 };
 
 const mapStateToProps = (state) => ({

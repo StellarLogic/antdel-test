@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { useEffect } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import * as Yup from 'yup';
@@ -34,7 +35,7 @@ import { TextField as MuiTextField } from '@mui/material';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import { tags } from './tags';
 import { useStyles, Label, InputWrapper, Listbox, StyledTag, Android12Switch } from './style';
-import { addAgent } from '../../../actions/agent/agent';
+import { addAgent, getAgentListing } from '../../../actions/agent/agent';
 import { fetchTags, fetchTeams } from '../../../actions/config/config';
 import { countries } from './phone-code';
 
@@ -65,22 +66,7 @@ const initialValues = {
   tags: []
 };
 
-// initialValues = {
-//   user_name: 'Adela_Berge22',
-//   name: 'Benjamin Cassin',
-//   email: 'Gardner.Baumbach6@gmail.com',
-//   phone_country: '91',
-//   phone: '8130519266',
-//   password: 'Gardner.Baumbach6@gmail.com',
-//   assign_team: '1',
-//   agent_permission: '2',
-//   is_vat: false,
-//   image: '',
-//   vat_image: '',
-//   tags: []
-// };
-
-const AddAgent = ({ config }) => {
+const AddAgent = ({ config, handleClose }) => {
   const {
     getRootProps,
     getInputLabelProps,
@@ -153,23 +139,17 @@ const AddAgent = ({ config }) => {
   const formik = useFormik({
     initialValues,
     validationSchema: LoginSchema,
-    // eslint-disable-next-line camelcase
+    enableReinitialize: true,
     onSubmit: ({
-      // eslint-disable-next-line camelcase
       user_name,
       name,
       email,
-      // eslint-disable-next-line camelcase
       phone_country,
       phone,
       password,
-      // eslint-disable-next-line camelcase
       assign_team,
-      // eslint-disable-next-line camelcase
       agent_permission,
-      // eslint-disable-next-line camelcase
       is_vat,
-      // eslint-disable-next-line camelcase
       vat_image,
       image,
       tags
@@ -186,10 +166,10 @@ const AddAgent = ({ config }) => {
         image,
         tags
       };
-      // eslint-disable-next-line camelcase
+
       if (is_vat) {
         payload.is_vat = 1;
-        // eslint-disable-next-line camelcase
+
         payload.vat_image = vat_image;
       } else {
         payload.is_vat = 0;
@@ -197,7 +177,11 @@ const AddAgent = ({ config }) => {
 
       const formData = serialize(payload);
       return dispatch(addAgent(formData)).then((res) => {
-        // notification.success('Agent Added');
+        if (res.status === 1) {
+          formik.resetForm();
+          handleClose();
+          dispatch(getAgentListing(0, 10));
+        }
       });
     }
   });
@@ -216,7 +200,7 @@ const AddAgent = ({ config }) => {
     handleSubmit,
     getFieldProps
   } = formik;
-  console.log(`config`, values);
+
   return (
     <div className={classes.formContainer}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>

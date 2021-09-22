@@ -6,6 +6,7 @@ export const GET_USER_PROFILE_FAIL = 'GET_USER_PROFILE_FAIL';
 
 // ############## AGENT ##############
 export const GET_AGENT_LIST = 'GET_AGENT_LIST';
+export const DELETE_AGENT = 'DELETE_AGENT';
 
 // ############## CONFIG ##############
 export const GET_TAGS = 'GET_TAGS';

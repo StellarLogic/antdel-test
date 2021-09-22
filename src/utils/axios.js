@@ -43,7 +43,7 @@ axios.interceptors.response.use(
             }
           });
           // console.log(`res-1`, res);
-          if (res.data.status === 401) {
+          if (res.data.status !== 1) {
             localStorage.clear();
             return store.dispatch({
               type: LOG_OUT
