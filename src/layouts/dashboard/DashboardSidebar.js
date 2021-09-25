@@ -5,6 +5,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { styled } from '@material-ui/core/styles';
 import { Box, Link, Button, Drawer, Typography, Avatar, Stack } from '@material-ui/core';
 // components
+import { connect } from 'react-redux';
 import Logo from '../../components/Logo';
 import Scrollbar from '../../components/Scrollbar';
 import NavSection from '../../components/NavSection';
@@ -34,12 +35,7 @@ const AccountStyle = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-DashboardSidebar.propTypes = {
-  isOpenSidebar: PropTypes.bool,
-  onCloseSidebar: PropTypes.func
-};
-
-export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
+const DashboardSidebar = ({ isOpenSidebar, onCloseSidebar, auth }) => {
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -48,7 +44,6 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
-
   const renderContent = (
     <Scrollbar
       sx={{
@@ -68,7 +63,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
             <Avatar src={account.photoURL} alt="photoURL" />
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {account.displayName}
+                {auth?.user?.name}
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 {account.role}
@@ -152,4 +147,15 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
       </MHidden>
     </RootStyle>
   );
-}
+};
+
+DashboardSidebar.propTypes = {
+  isOpenSidebar: PropTypes.bool,
+  onCloseSidebar: PropTypes.func
+};
+
+const mapStateToProps = (state) => ({
+  auth: state.auth
+});
+
+export default connect(mapStateToProps)(DashboardSidebar);

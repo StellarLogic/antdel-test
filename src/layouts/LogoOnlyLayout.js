@@ -25,13 +25,13 @@ export default function LogoOnlyLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate('/login');
+    // navigate('/login');
   }, []);
 
   return (
     <>
       <HeaderStyle>
-        <RouterLink to="">
+        <RouterLink to="/">
           <Logo />
         </RouterLink>
       </HeaderStyle>

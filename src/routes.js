@@ -13,13 +13,15 @@ import NotFound from './pages/Page404';
 import UserProfile from './pages/UserProfile/UserProfile';
 import Users from './pages/Users/Users';
 import Agent from './pages/Agent/Agent';
+import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
 
 // ----------------------------------------------------------------------
 
 const routes = ({ isAuthenticated }) => [
   {
     path: '/dashboard',
-    element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />,
+    element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/" />,
     // element: <DashboardLayout />,
     children: [
       { path: '/', element: <Navigate to="/dashboard/app" replace /> },
@@ -36,10 +38,11 @@ const routes = ({ isAuthenticated }) => [
     path: '/',
     element: <LogoOnlyLayout />,
     children: [
-      { path: 'login', element: <Login /> },
-      { path: '*', element: <Navigate to="/404" /> },
-      { path: '404', element: <NotFound /> }
-      // { path: 'register', element: <Register /> },
+      { path: '/', element: <Login /> },
+      { path: '404', element: <NotFound /> },
+      { path: 'forgot-password', element: <ForgotPassword /> },
+      { path: 'resetpassword/:key', element: <ResetPassword /> },
+      { path: '*', element: <Navigate to="/404" /> }
       // { path: '/', element: <Navigate to="/dashboard" /> },
     ]
   },

@@ -25,8 +25,6 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (res) => res,
   async (err) => {
-    // eslint-disable-next-line no-debugger
-    debugger;
     const originalConfig = err.config;
 
     if (originalConfig.url !== '/user/refresh-token' && err.response) {

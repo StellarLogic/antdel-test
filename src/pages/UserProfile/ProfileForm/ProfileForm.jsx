@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React from 'react';
 import { connect, useDispatch } from 'react-redux';
 import * as Yup from 'yup';
@@ -8,11 +9,14 @@ import { Stack, TextField, Select, MenuItem } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
 import Grid from '@material-ui/core/Grid';
 
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import { useStyles } from './style';
 import { countryCode } from './contryCode';
 import { updateUserProfile } from '../../../actions/profile/profile';
 
 // material
+
+const SUPPORTED_FORMATS = ['image/jpg', 'image/jpeg', 'image/png'];
 
 const ProfileForm = ({ user }) => {
   const classes = useStyles();
@@ -25,7 +29,15 @@ const ProfileForm = ({ user }) => {
     phone: Yup.string()
       .matches(phoneRegExp, 'Phone number is not valid')
       .min(10, 'Invalid phone')
-      .max(10, 'Invalid phone')
+      .max(10, 'Invalid phone'),
+    image: Yup.mixed()
+      .required('Image is required')
+      .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
+      .test(
+        'fileType',
+        'Unsupported File Format',
+        (value) => value && SUPPORTED_FORMATS.includes(value.type)
+      )
   });
 
   const formik = useFormik({
@@ -33,24 +45,18 @@ const ProfileForm = ({ user }) => {
       name: user.name,
       email: user.email,
       phone_country_id: user.phone_country_id,
-      phone: user.phone
+      phone: user.phone,
+      image: user.image
     },
     validationSchema: LoginSchema,
-    // eslint-disable-next-line camelcase
-    onSubmit: ({ name, email, phone_country_id, phone }) => {
-      // const changesProperties = {};
-      // if (name !== user.name) changesProperties.name = name;
-      // if (email !== user.email) changesProperties.email = email;
-      // // eslint-disable-next-line camelcase
-      // if (phone_country_id !== user.phone_country_id)
-      //   // eslint-disable-next-line camelcase
-      //   changesProperties.phone_country_id = phone_country_id;
-      // if (phone !== user.phone) changesProperties.phone = phone;
+
+    onSubmit: ({ name, email, phone_country_id, phone, image }) => {
       const payload = {
         name,
         email,
         phone_country_id,
-        phone
+        phone,
+        image
       };
 
       const formData = serialize(payload);
@@ -61,14 +67,51 @@ const ProfileForm = ({ user }) => {
     }
   });
 
-  const { errors, touched, dirty, values, isSubmitting, handleSubmit, getFieldProps } = formik;
-
+  const {
+    errors,
+    touched,
+    dirty,
+    values,
+    isSubmitting,
+    handleSubmit,
+    getFieldProps,
+    setFieldValue
+  } = formik;
+  console.log(`values`, values.image);
   const form = (
     <div className={classes.formContainer}>
       <FormikProvider value={formik}>
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
           <Stack spacing={3}>
             <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <div className={classes.imageWrapper}>
+                  <label htmlFor="profile-image" className={classes.image}>
+                    <AddCircleOutlineIcon className={classes.plusIcon} />
+                    <input
+                      type="file"
+                      name="image"
+                      id="profile-image"
+                      max={1}
+                      onChange={(event) => {
+                        setFieldValue('image', event.currentTarget.files[0]);
+                      }}
+                    />
+                  </label>
+                  {touched.image && errors.image && (
+                    <span className={classes.errorClass}>{errors.image}</span>
+                  )}
+                </div>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                {values.image && typeof values.image !== 'string' && (
+                  <img
+                    src={URL.createObjectURL(values.image)}
+                    alt="avatar"
+                    className={classes.imagePreview}
+                  />
+                )}
+              </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth

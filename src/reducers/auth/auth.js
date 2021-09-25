@@ -3,13 +3,18 @@ import {
   GET_USER_PROFILE,
   GET_USER_PROFILE_FAIL,
   LOG_OUT,
-  UPDATE_USER_PROFILE
+  UPDATE_USER_PROFILE,
+  RESET_PASS_VALID_KEY
 } from '../../actions/action-type';
 
 const initialState = {
   loading: false,
   isAuthenticated: false,
-  user: {}
+  user: {},
+  resetPassword: {
+    loading: true,
+    valid: false
+  }
 };
 
 export const auth = (state = initialState, { type, payload }) => {
@@ -24,6 +29,8 @@ export const auth = (state = initialState, { type, payload }) => {
       return { ...state, ...payload };
     case UPDATE_USER_PROFILE:
       return { ...state, ...payload };
+    case RESET_PASS_VALID_KEY:
+      return { ...state, resetPassword: { ...state.resetPassword, ...payload } };
     default:
       return state;
   }

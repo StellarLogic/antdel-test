@@ -11,8 +11,10 @@ export const handleResponseError = (data = {}, cb = () => {}) => {
 
   if (data.message !== Array) {
     notification.success(data.message);
-    return cb();
+    cb();
+    return data;
   }
   data.error.map((error) => notification.success(error?.msg));
-  return cb();
+  cb();
+  return data;
 };

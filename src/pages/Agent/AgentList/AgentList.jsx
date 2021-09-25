@@ -36,6 +36,7 @@ import { UserListHead, UserListToolbar, UserMoreMenu } from '../../../components
 
 import dummy from '../data';
 import { useStyles } from './style';
+import RowSkeleton from './RowSkeleton';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -153,8 +154,8 @@ const AgentList = ({
     dispatch(deleteAgent(id, updatedList));
   };
 
-  if (loading) return <p>Loading</p>;
-  console.log(`filteredUsers`, filteredUsers);
+  // if (loading) return <p>Loading</p>;
+  // console.log(`filteredUsers`, filteredUsers);
   return (
     <Page>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
@@ -179,15 +180,18 @@ const AgentList = ({
                 order={order}
                 orderBy={orderBy}
                 headLabel={TABLE_HEAD}
-                rowCount={agents.length}
+                rowCount={agents?.length}
                 numSelected={selected.length}
                 onRequestSort={handleRequestSort}
                 onSelectAllClick={handleSelectAllClick}
               />
               <TableBody>
-                {
+                {loading ? (
+                  <RowSkeleton />
+                ) : (
                   // filteredUsers
                   // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  agents &&
                   agents.map((row, index) => {
                     const { id, name, user_name, email, phone, phone_country_id } = row;
                     const { avatar } = dummy[1];
@@ -202,10 +206,10 @@ const AgentList = ({
                         aria-checked={isItemSelected}
                       >
                         <TableCell padding="checkbox">
-                          <Checkbox
+                          {/* <Checkbox
                             checked={isItemSelected}
                             onChange={(event) => handleClick(event, name)}
-                          />
+                          /> */}
                         </TableCell>
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
@@ -227,12 +231,12 @@ const AgentList = ({
                       </TableRow>
                     );
                   })
-                }
-                {emptyRows > 0 && (
+                )}
+                {/* {emptyRows > 0 && (
                   <TableRow style={{ height: 53 * emptyRows }}>
                     <TableCell colSpan={6} />
                   </TableRow>
-                )}
+                )} */}
               </TableBody>
               {isUserNotFound && (
                 <TableBody>
