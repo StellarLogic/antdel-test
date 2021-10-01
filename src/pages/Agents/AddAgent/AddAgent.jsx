@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
@@ -37,7 +37,7 @@ import { tags } from './tags';
 import { useStyles, Label, InputWrapper, Listbox, StyledTag, Android12Switch } from './style';
 import { addAgent, getAgentListing } from '../../../actions/agent/agent';
 import { fetchTags, fetchTeams } from '../../../actions/config/config';
-import { countries } from './phone-code';
+// import { countries } from './phone-code';
 
 function Tag(props) {
   const { label, onDelete, ...other } = props;
@@ -66,7 +66,7 @@ const initialValues = {
   tags: []
 };
 
-const AddAgent = ({ config, handleClose }) => {
+const AddAgent = ({ config, handleClose, id, agents, countries }) => {
   const {
     getRootProps,
     getInputLabelProps,
@@ -80,7 +80,6 @@ const AddAgent = ({ config, handleClose }) => {
     setAnchorEl
   } = useAutocomplete({
     id: 'customized-hook-tag',
-    // defaultValue: [tags[1]],
     multiple: true,
     options: config.tags.list,
     getOptionLabel: (option) => option.name
@@ -92,53 +91,12 @@ const AddAgent = ({ config, handleClose }) => {
   useEffect(() => {
     dispatch(fetchTags);
     dispatch(fetchTeams);
+    formik.resetForm();
   }, [dispatch]);
-
-  const phoneRegExp =
-    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
-
-  const LoginSchema = Yup.object().shape({
-    email: Yup.string().email('Email must be a valid email address').required('Email is required'),
-    phone: Yup.string()
-      .required('Phone Number is required')
-      .matches(phoneRegExp, 'Phone number is not valid')
-      .min(10, 'Invalid phone')
-      .max(10, 'Invalid phone'),
-    user_name: Yup.string().required('User Name is required'),
-    name: Yup.string().required('Name is required'),
-    password: Yup.string().required('Password is required'),
-    assign_team: Yup.string().required('Assign Team is required'),
-    agent_permission: Yup.string().required('Agent Permisison is required'),
-    image: Yup.mixed()
-      .required('Image is required')
-      .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
-      .test(
-        'fileType',
-        'Unsupported File Format',
-        (value) => value && SUPPORTED_FORMATS.includes(value.type)
-      ),
-    is_vat: Yup.boolean(),
-    vat_image: Yup.mixed().when('is_vat', {
-      is: true,
-      then: Yup.mixed()
-        .required('Vat Image is required')
-        .test(
-          'fileSize',
-          'File Size is too large',
-          (value) => value && value.size <= 2 * 1024 * 1024
-        )
-        .test(
-          'fileType',
-          'Unsupported File Format',
-          (value) => value && SUPPORTED_FORMATS.includes(value.type)
-        ),
-      other: Yup.mixed()
-    })
-  });
 
   const formik = useFormik({
     initialValues,
-    validationSchema: LoginSchema,
+    validationSchema,
     enableReinitialize: true,
     onSubmit: ({
       user_name,
@@ -186,10 +144,48 @@ const AddAgent = ({ config, handleClose }) => {
     }
   });
 
+  useEffect(() => {
+    const tags = value.map((tag) => tag.id);
+    setFieldValue('tags', tags);
+  }, [value]);
+
+  // useEffect(() => {
+  //   if (id) {
+  //     const agent = agents.data?.rows?.find((agent) => agent.id === id);
+  //     const {
+  //       user_name,
+  //       name,
+  //       email,
+  //       phone_country,
+  //       phone,
+  //       assign_team,
+  //       agent_permission,
+  //       is_vat,
+  //       vat_image,
+  //       image,
+  //       tags
+  //     } = agent;
+  //     if (agent)
+  //       initialValues = {
+  //         user_name,
+  //         name,
+  //         email,
+  //         phone_country,
+  //         phone,
+  //         assign_team,
+  //         agent_permission,
+  //         is_vat,
+  //         vat_image,
+  //         image,
+  //         tags
+  //       };
+  //   }
+  //   formik.resetForm();
+  // }, [agents, id]);
+
   const handleSelectChange = ({ target: { value } }, name) => {
     formik.setFieldValue(name, value);
   };
-
   const {
     errors,
     touched,
@@ -200,12 +196,13 @@ const AddAgent = ({ config, handleClose }) => {
     handleSubmit,
     getFieldProps
   } = formik;
+  console.log(`{values,initialValues}`, values);
 
   return (
     <div className={classes.formContainer}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" gutterBottom>
-          Add Agent
+          {id ? 'Update' : 'Add'} Agent
         </Typography>
       </Stack>
       <FormikProvider value={formik}>
@@ -232,7 +229,7 @@ const AddAgent = ({ config, handleClose }) => {
                 </div>
               </Grid>
               <Grid item xs={12} md={6}>
-                {values.image && (
+                {values.image && values.image !== 'string' && (
                   <img
                     src={URL.createObjectURL(values.image)}
                     alt="avatar"
@@ -285,22 +282,25 @@ const AddAgent = ({ config, handleClose }) => {
                 {/* <InputLabel id="demo-simple-select-label">Age</InputLabel> */}
                 <Autocomplete
                   id="country-select-demo"
-                  options={countries}
+                  options={countries.list}
                   autoHighlight
-                  value={countries.find((country) => country.phone === values.phone_country)}
+                  value={countries?.list.find(
+                    (country) => country.calling_code === values.phone_country
+                  )}
+                  name="phone_country"
                   error={Boolean(touched.phone_country && errors.phone_country)}
                   helperText={touched.phone_country && errors.phone_country}
-                  getOptionLabel={(option) => option.label}
+                  getOptionLabel={(option) => option.name}
                   renderOption={(props, option) => (
                     <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                       <img
                         loading="lazy"
                         width="20"
-                        src={`https://flagcdn.com/w20/${option.code.toLowerCase()}.png`}
-                        srcSet={`https://flagcdn.com/w40/${option.code.toLowerCase()}.png 2x`}
+                        src={`https://flagcdn.com/w20/${option.iso2.toLowerCase()}.png`}
+                        srcSet={`https://flagcdn.com/w40/${option.iso2.toLowerCase()}.png 2x`}
                         alt=""
                       />
-                      {option.label} ({option.code}) +{option.phone}
+                      {option.name} ({option.iso2}) +{option.calling_code}
                     </Box>
                   )}
                   onChange={(event, newValue) => {
@@ -313,7 +313,8 @@ const AddAgent = ({ config, handleClose }) => {
                       label="Choose a country"
                       inputProps={{
                         ...params.inputProps,
-                        autoComplete: 'new-password' // disable autocomplete and autofill
+                        name: 'phone_country'
+                        // autoComplete: 'new-password' // disable autocomplete and autofill
                       }}
                     />
                   )}
@@ -404,7 +405,7 @@ const AddAgent = ({ config, handleClose }) => {
                     </div>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    {values.vat_image && (
+                    {values.vat_image && values.vat_image !== 'string' && (
                       <img
                         src={URL.createObjectURL(values.vat_image)}
                         alt="avatar"
@@ -446,7 +447,7 @@ const AddAgent = ({ config, handleClose }) => {
               sx={{ mt: 2 }}
               disabled={!dirty}
             >
-              Add
+              {id ? 'Update' : 'Add'}
             </LoadingButton>
           </div>
         </Form>
@@ -456,11 +457,55 @@ const AddAgent = ({ config, handleClose }) => {
 };
 
 AddAgent.propTypes = {
-  config: PropTypes.object
+  config: PropTypes.object,
+  handleClose: PropTypes.func,
+  agents: PropTypes.object,
+  countries: PropTypes.array,
+  id: PropTypes.number
 };
 
 const mapStateToProps = (state) => ({
-  config: state.config
+  config: state.config,
+  countries: state.config.countries,
+  agents: state.agents
 });
 
 export default connect(mapStateToProps)(AddAgent);
+const phoneRegExp =
+  /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string().email('Email must be a valid email address').required('Email is required'),
+  phone: Yup.string()
+    .required('Phone Number is required')
+    .matches(phoneRegExp, 'Phone number is not valid')
+    .min(10, 'Invalid phone')
+    .max(10, 'Invalid phone'),
+  user_name: Yup.string().required('User Name is required'),
+  name: Yup.string().required('Name is required'),
+  password: Yup.string().min(8).required('Password is required'),
+  phone_country: Yup.string().required('Phone Country is required'),
+  assign_team: Yup.string().required('Assign Team is required'),
+  agent_permission: Yup.string().required('Agent Permission is required'),
+  image: Yup.mixed()
+    .required('Image is required')
+    .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
+    .test(
+      'fileType',
+      'Unsupported File Format',
+      (value) => value && SUPPORTED_FORMATS.includes(value.type)
+    ),
+  is_vat: Yup.boolean(),
+  vat_image: Yup.mixed().when('is_vat', {
+    is: true,
+    then: Yup.mixed()
+      .required('Vat Image is required')
+      .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
+      .test(
+        'fileType',
+        'Unsupported File Format',
+        (value) => value && SUPPORTED_FORMATS.includes(value.type)
+      ),
+    other: Yup.mixed()
+  })
+});

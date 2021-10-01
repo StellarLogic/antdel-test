@@ -1,18 +1,21 @@
-import { toast } from 'react-toastify';
-import { notification } from '../../utils/notification';
 import axios from '../../utils/axios';
-import {
-  GET_USER_PROFILE,
-  GET_USER_PROFILE_FAIL,
-  GET_AGENT_LIST,
-  UPDATE_USER_PROFILE,
-  DELETE_AGENT
-} from '../action-type';
+import { GET_AGENT_LIST, DELETE_AGENT } from '../action-type';
 import { handleResponseError } from '../../utils/handleResponseError';
 
-export const addAgent = (payload) => async (dispatch) => {
+export const addAgent = async (payload) => {
   try {
     const { data } = await axios.post(`/user/agent_register`, payload);
+    handleResponseError(data);
+
+    return data;
+  } catch (error) {
+    return console.log(`error`, error);
+  }
+};
+
+export const updateAgent = async (agentId, payload) => {
+  try {
+    const { data } = await axios.post(`/user/agent_update/${agentId}`, payload);
     handleResponseError(data);
 
     return data;
@@ -29,7 +32,7 @@ export const getAgentListing = (currentPage, perPage) => async (dispatch) => {
         loading: true
       }
     });
-    const { data } = await axios.get(`user/agent_listing?page=${currentPage}&per_page=${perPage}`);
+    const { data } = await axios.get(`/user/agent_listing?page=${currentPage}&per_page=${perPage}`);
 
     const callBack = () =>
       dispatch({
@@ -40,7 +43,7 @@ export const getAgentListing = (currentPage, perPage) => async (dispatch) => {
         }
       });
 
-    handleResponseError(data, callBack);
+    handleResponseError(data, { callBack, showAlert: false });
 
     return data;
   } catch (error) {
@@ -50,7 +53,7 @@ export const getAgentListing = (currentPage, perPage) => async (dispatch) => {
 
 export const deleteAgent = (agentId, updatedList) => async (dispatch) => {
   try {
-    const { data } = await axios.delete(`user/agent_delete`, { data: { id: agentId } });
+    const { data } = await axios.delete(`/user/agent_delete`, { data: { id: agentId } });
 
     const callBack = () =>
       dispatch({

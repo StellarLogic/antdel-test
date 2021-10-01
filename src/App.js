@@ -13,6 +13,8 @@ import ThemeConfig from './theme';
 // components
 import ScrollToTop from './components/ScrollToTop';
 import { getUserProfile } from './actions/profile/profile';
+import RefreshToken from './components/RefreshToken/RefreshToken';
+import { fetchCountries } from './actions/config/config';
 // import { setAuthToken } from './utils/axios';
 
 // ----------------------------------------------------------------------
@@ -41,6 +43,7 @@ export default function App() {
     if (auth.isAuthenticated) {
       navigate('/dashboard/app');
     }
+    dispatch(fetchCountries);
   }, []);
 
   if (auth.loading)
@@ -52,6 +55,7 @@ export default function App() {
 
   return (
     <ThemeConfig>
+      {/* <RefreshToken /> */}
       <ToastContainer
         position="top-right"
         autoClose={5000}

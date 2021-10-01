@@ -5,7 +5,7 @@ import { SIGN_IN, LOG_OUT } from '../action-type';
 export const logIn = (payload) => async (dispatch) => {
   try {
     const { data } = await axios.post(`/user/login`, payload);
-    const callback = () => {
+    const callBack = () => {
       if (data) {
         localStorage.setItem('token', data?.token);
         dispatch({ type: SIGN_IN, payload: { loading: false, isAuthenticated: true } });
@@ -13,7 +13,7 @@ export const logIn = (payload) => async (dispatch) => {
         dispatch({ type: SIGN_IN, payload: { loading: false, isAuthenticated: false } });
       }
     };
-    handleResponseError(data, callback);
+    handleResponseError(data, { callBack });
     return data;
   } catch (error) {
     console.log(error);
@@ -40,13 +40,14 @@ export const forgotPassword = async (payload) => {
 export const forgotPasswordReset = (key, payload) => async (dispatch) => {
   try {
     const { data } = await axios.post(`/user/resetpassword/${key}`, payload);
-    const callback = () => {
+    const callBack = () => {
       dispatch({
         loading: false,
         valid: true
       });
     };
-    handleResponseError(data, callback);
+    handleResponseError(data, callBack);
+    handleResponseError(data, { callBack, showAlert: true });
     return data;
   } catch (error) {
     console.log(error);

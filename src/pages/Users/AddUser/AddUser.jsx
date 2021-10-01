@@ -1,6 +1,8 @@
-import React from 'react';
+/* eslint-disable camelcase */
+import React, { useEffect } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import * as Yup from 'yup';
+import PropTypes from 'prop-types';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { serialize } from 'object-to-formdata';
@@ -14,64 +16,204 @@ import {
   InputAdornment,
   FormControlLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Card,
+  Container,
+  CardContent,
+  InputLabel,
+  Typography,
+  Button
 } from '@material-ui/core';
+import { useAutocomplete } from '@mui/core/AutocompleteUnstyled';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import { LoadingButton } from '@material-ui/lab';
 import Grid from '@material-ui/core/Grid';
+import Box from '@mui/material/Box';
+import Autocomplete from '@mui/material/Autocomplete';
+import { TextField as MuiTextField } from '@mui/material';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { tags } from './tags';
+import { useStyles, Label, InputWrapper, Listbox, StyledTag, Android12Switch } from './style';
+import { addUser, getUserListing } from '../../../actions/users/users';
+import { fetchTags, fetchTeams } from '../../../actions/config/config';
+import { countries } from './phone-code';
 
-import { useStyles } from './style';
-import { countryCode } from '../../UserProfile/ProfileForm/contryCode';
+function Tag(props) {
+  const { label, onDelete, ...other } = props;
+  return (
+    <div {...other}>
+      <span>{label}</span>
+      <CloseIcon onClick={onDelete} />
+    </div>
+  );
+}
 
-const AddUser = () => {
+const SUPPORTED_FORMATS = ['image/jpg', 'image/jpeg', 'image/png'];
+
+let initialValues = {
+  user_name: '',
+  name: '',
+  email: '',
+  phone_country: '',
+  phone: '',
+  password: '',
+  assign_team: '',
+  agent_permission: '',
+  is_vat: false,
+  image: '',
+  vat_image: '',
+  tags: []
+};
+
+const AddUser = ({ config, handleClose, id, users }) => {
+  const {
+    getRootProps,
+    getInputLabelProps,
+    getInputProps,
+    getTagProps,
+    getListboxProps,
+    getOptionProps,
+    groupedOptions,
+    value,
+    focused,
+    setAnchorEl
+  } = useAutocomplete({
+    id: 'customized-hook-tag',
+    multiple: true,
+    options: config.tags.list,
+    getOptionLabel: (option) => option.name
+  });
+
   const classes = useStyles();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchTags);
+    dispatch(fetchTeams);
+    formik.resetForm();
+  }, [dispatch]);
+
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 
   const LoginSchema = Yup.object().shape({
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
     phone: Yup.string()
+      .required('Phone Number is required')
       .matches(phoneRegExp, 'Phone number is not valid')
       .min(10, 'Invalid phone')
       .max(10, 'Invalid phone'),
     user_name: Yup.string().required('User Name is required'),
     name: Yup.string().required('Name is required'),
-    password: Yup.string().required('Password is required')
+    password: Yup.string().required('Password is required'),
+    image: Yup.mixed()
+      .required('Image is required')
+      .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
+      .test(
+        'fileType',
+        'Unsupported File Format',
+        (value) => value && SUPPORTED_FORMATS.includes(value.type)
+      )
   });
 
   const formik = useFormik({
-    initialValues: {
-      user_name: '',
-      name: '',
-      email: '',
-      phone_country_id: '',
-      phone: '',
-      password: ''
-    },
+    initialValues,
     validationSchema: LoginSchema,
-    // eslint-disable-next-line camelcase
-    onSubmit: ({ name, email, phone_country_id, phone }) => {
-      //   const changesProperties = {};
-      //   if (name !== user.name) changesProperties.name = name;
-      //   if (email !== user.email) changesProperties.email = email;
-      //   // eslint-disable-next-line camelcase
-      //   if (phone_country_id !== user.phone_country_id)
-      //     // eslint-disable-next-line camelcase
-      //     changesProperties.phone_country_id = phone_country_id;
-      //   if (phone !== user.phone) changesProperties.phone = phone;
-      //   const formData = serialize(changesProperties);
-      //   dispatch(updateUserProfile(formData));
+    enableReinitialize: true,
+    onSubmit: ({ user_name, name, email, phone_country, phone, password, image }) => {
+      const payload = {
+        user_name,
+        name,
+        email,
+        phone_country,
+        phone,
+        password,
+        image
+      };
+
+      const formData = serialize(payload);
+      return dispatch(addUser(formData)).then((res) => {
+        if (res.status === 1) {
+          formik.resetForm();
+          handleClose();
+          dispatch(getUserListing(0, 10));
+        }
+      });
     }
   });
 
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
+  useEffect(() => {
+    if (id) {
+      const user = users.data?.rows?.find((user) => user.id === id);
+      const { user_name, name, email, phone_country, phone, image } = user;
+      if (user)
+        initialValues = {
+          user_name,
+          name,
+          email,
+          phone_country,
+          phone,
+          image
+        };
+    }
+    formik.resetForm();
+  }, [users, id]);
+
+  const handleSelectChange = ({ target: { value } }, name) => {
+    formik.setFieldValue(name, value);
+  };
+  const {
+    errors,
+    touched,
+    dirty,
+    setFieldValue,
+    values,
+    isSubmitting,
+    handleSubmit,
+    getFieldProps
+  } = formik;
+  console.log(`{values,initialValues}`, { values, initialValues });
 
   return (
     <div className={classes.formContainer}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+        <Typography variant="h4" gutterBottom>
+          {id ? 'Update' : 'Add'} Agent
+        </Typography>
+      </Stack>
       <FormikProvider value={formik}>
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
           <Stack spacing={3}>
             <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <div className={classes.imageWrapper}>
+                  <label htmlFor="profile-image" className={classes.image}>
+                    <AddCircleOutlineIcon className={classes.plusIcon} />
+                    <input
+                      type="file"
+                      name="image"
+                      id="profile-image"
+                      max={1}
+                      onChange={(event) => {
+                        setFieldValue('image', event.currentTarget.files[0]);
+                      }}
+                    />
+                  </label>
+                  {touched.image && errors.image && (
+                    <span className={classes.errorClass}>{errors.image}</span>
+                  )}
+                </div>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                {values.image && values.image !== 'string' && (
+                  <img
+                    src={URL.createObjectURL(values.image)}
+                    alt="avatar"
+                    className={classes.imagePreview}
+                  />
+                )}
+              </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
@@ -111,47 +253,162 @@ const AddUser = () => {
                   error={Boolean(touched.email && errors.email)}
                   helperText={touched.email && errors.email}
                 />
+              </Grid>{' '}
+              {/* <Grid container spacing={3}> */}
+              <Grid item xs={12} md={6}>
+                {/* <InputLabel id="demo-simple-select-label">Age</InputLabel> */}
+                <Autocomplete
+                  id="country-select-demo"
+                  options={countries}
+                  autoHighlight
+                  value={countries.find((country) => country.phone === values.phone_country)}
+                  error={Boolean(touched.phone_country && errors.phone_country)}
+                  helperText={touched.phone_country && errors.phone_country}
+                  getOptionLabel={(option) => option.label}
+                  renderOption={(props, option) => (
+                    <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                      <img
+                        loading="lazy"
+                        width="20"
+                        src={`https://flagcdn.com/w20/${option.code.toLowerCase()}.png`}
+                        srcSet={`https://flagcdn.com/w40/${option.code.toLowerCase()}.png 2x`}
+                        alt=""
+                      />
+                      {option.label} ({option.code}) +{option.phone}
+                    </Box>
+                  )}
+                  onChange={(event, newValue) => {
+                    formik.setFieldValue('phone_country', newValue?.phone);
+                  }}
+                  renderInput={(params) => (
+                    <MuiTextField
+                      fullWidth
+                      {...params}
+                      label="Choose a country"
+                      inputProps={{
+                        ...params.inputProps,
+                        autoComplete: 'new-password' // disable autocomplete and autofill
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+              {/* <Grid item xs={12} md={6}> */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Phone Number"
+                  {...getFieldProps('phone')}
+                  error={Boolean(touched.phone && errors.phone)}
+                  helperText={touched.phone && errors.phone}
+                />
+              </Grid>
+              {/* </Grid> */}
+              {/* </Grid> */}
+              <Grid item xs={12} md={6}>
+                {/* <TextField
+                  fullWidth
+                  type="text"
+                  label="Assigned Team"
+                  {...getFieldProps('assign_team')}
+                  error={Boolean(touched.assign_team && errors.assign_team)}
+                  helperText={touched.assign_team && errors.assign_team}
+                /> */}
+                <InputLabel id="assign_team">Assigned Team</InputLabel>
+                <Select
+                  labelId="assign_team"
+                  id="assign_team"
+                  label="Assigned Team"
+                  onChange={(e) => handleSelectChange(e, 'assign_team')}
+                  placeholder="Assigned Team"
+                  // autoWidth
+                  className={classes.select}
+                >
+                  {config.teams.list.map((team) => (
+                    <MenuItem value={team.id}>{team.name}</MenuItem>
+                  ))}
+                </Select>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Grid container spacing={3}>
-                  <Grid item xs={4} md={3}>
-                    {/* <TextField
-                      fullWidth
-                      type="phone_country_id"
-                      label="Country Code"
-                      {...getFieldProps('phone_country_id')}
-                      error={Boolean(touched.phone_country_id && errors.phone_country_id)}
-                      helperText={touched.phone_country_id && errors.phone_country_id}
-                    /> */}
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="phone_country_id"
-                      // value={countryCode.find((country) => country.name === 'India')?.code}
-                      value={
-                        // values.phone_country_id ||
-                        countryCode.find((country) => country.name === 'India')?.code
-                      }
-                      label="Country Code"
-                      // onChange={handleChange}
-                    >
-                      {countryCode.map((country) => (
-                        <MenuItem key={country.code} value={country.code}>
-                          {country.code}
-                        </MenuItem>
+                <InputLabel id="agent_permission">Assigned Team</InputLabel>
+                <Select
+                  labelId="agent_permission"
+                  id="agent_permission"
+                  label="Agent Permission"
+                  onChange={(e) => handleSelectChange(e, 'agent_permission')}
+                  placeholder="Agent Permission"
+                  // autoWidth
+                  className={classes.select}
+                >
+                  {config.teams.list.map((team) => (
+                    <MenuItem value={team.id}>{team.name}</MenuItem>
+                  ))}
+                </Select>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={<Android12Switch checked={values.is_vat} />}
+                  label="VAT"
+                  onChange={({ target }) => {
+                    formik.setFieldValue('is_vat', target.checked);
+                    if (!target.checked) formik.setFieldValue('vat_image', '');
+                  }}
+                />
+              </Grid>
+              {values.is_vat && (
+                <>
+                  <Grid item xs={12} md={6}>
+                    <div className={classes.imageWrapper}>
+                      <label htmlFor="vat-image" className={classes.image}>
+                        <AddCircleOutlineIcon className={classes.plusIcon} />
+                        <input
+                          type="file"
+                          name="image"
+                          id="vat-image"
+                          max={1}
+                          onChange={(event) => {
+                            setFieldValue('vat_image', event.currentTarget.files[0]);
+                          }}
+                        />
+                      </label>
+                      {touched.vat_image && errors.vat_image && (
+                        <span className={classes.errorClass}>{errors.vat_image}</span>
+                      )}
+                    </div>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    {values.vat_image &&
+                      values.vat_image !==
+                        'string'(
+                          <img
+                            src={URL.createObjectURL(values.vat_image)}
+                            alt="avatar"
+                            className={classes.imagePreview}
+                          />
+                        )}
+                  </Grid>
+                </>
+              )}
+              <Grid item xs={12}>
+                <div className={classes.tagsWapper}>
+                  <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
+                    {value.map((option, index) => (
+                      <StyledTag label={option.name} {...getTagProps({ index })} />
+                    ))}
+                    <input {...getInputProps()} />
+                  </InputWrapper>
+                  {groupedOptions.length > 0 ? (
+                    <Listbox {...getListboxProps()}>
+                      {groupedOptions.map((option, index) => (
+                        <li {...getOptionProps({ option, index })}>
+                          <span>{option.name}</span>
+                          <CheckIcon fontSize="large" />
+                        </li>
                       ))}
-                    </Select>
-                  </Grid>
-                  <Grid item xs={8} md={9}>
-                    <TextField
-                      fullWidth
-                      type="text"
-                      label="Phone Number"
-                      {...getFieldProps('phone')}
-                      error={Boolean(touched.phone && errors.phone)}
-                      helperText={touched.phone && errors.phone}
-                    />
-                  </Grid>
-                </Grid>
+                    </Listbox>
+                  ) : null}
+                </div>
               </Grid>
             </Grid>
           </Stack>
@@ -162,9 +419,10 @@ const AddUser = () => {
               type="submit"
               variant="contained"
               loading={isSubmitting}
-              sx={{ my: 2 }}
+              sx={{ mt: 2 }}
+              disabled={!dirty}
             >
-              Add
+              {id ? 'Update' : 'Add'}
             </LoadingButton>
           </div>
         </Form>
@@ -173,4 +431,15 @@ const AddUser = () => {
   );
 };
 
-export default AddUser;
+AddUser.propTypes = {
+  config: PropTypes.object,
+  handleClose: PropTypes.func,
+  users: PropTypes.object
+};
+
+const mapStateToProps = (state) => ({
+  config: state.config,
+  users: state.users
+});
+
+export default connect(mapStateToProps)(AddUser);

@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 
 // ----------------------------------------------------------------------
 
-export default function UserMoreMenu({ onClickDelete, onClickEdit }) {
+export default function UserMoreMenu({ onClickDelete, onClickEdit, hideEdit = false }) {
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -37,12 +37,14 @@ export default function UserMoreMenu({ onClickDelete, onClickEdit }) {
           <ListItemText primary="Delete" primaryTypographyProps={{ variant: 'body2' }} />
         </MenuItem>
 
-        <MenuItem sx={{ color: 'text.secondary' }} onClick={onClickEdit}>
-          <ListItemIcon>
-            <Icon icon={editFill} width={24} height={24} />
-          </ListItemIcon>
-          <ListItemText primary="Edit" primaryTypographyProps={{ variant: 'body2' }} />
-        </MenuItem>
+        {!hideEdit && (
+          <MenuItem sx={{ color: 'text.secondary' }} onClick={onClickEdit}>
+            <ListItemIcon>
+              <Icon icon={editFill} width={24} height={24} />
+            </ListItemIcon>
+            <ListItemText primary="Edit" primaryTypographyProps={{ variant: 'body2' }} />
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
@@ -50,5 +52,6 @@ export default function UserMoreMenu({ onClickDelete, onClickEdit }) {
 
 UserMoreMenu.propTypes = {
   onClickDelete: PropTypes.func,
-  onClickEdit: PropTypes.func
+  onClickEdit: PropTypes.func,
+  hideEdit: PropTypes.bool
 };

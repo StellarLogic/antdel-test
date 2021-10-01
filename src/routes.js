@@ -8,13 +8,14 @@ import Register from './pages/Register';
 import DashboardApp from './pages/DashboardApp';
 import Products from './pages/Products';
 import Blog from './pages/Blog';
-import User from './pages/User';
 import NotFound from './pages/Page404';
 import UserProfile from './pages/UserProfile/UserProfile';
 import Users from './pages/Users/Users';
-import Agent from './pages/Agent/Agent';
+import Agents from './pages/Agents/Agents';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
+import Tags from './pages/Tags/Tags';
+import Teams from './pages/Teams/Teams';
 
 // ----------------------------------------------------------------------
 
@@ -27,11 +28,12 @@ const routes = ({ isAuthenticated }) => [
       { path: '/', element: <Navigate to="/dashboard/app" replace /> },
       { path: 'app', element: <DashboardApp /> },
       { path: 'users', element: <Users /> },
-      { path: 'user', element: <User /> },
-      { path: 'agent', element: <Agent /> },
+      { path: 'agents', element: <Agents /> },
       { path: 'products', element: <Products /> },
       { path: 'blog', element: <Blog /> },
-      { path: 'profile', element: <UserProfile /> }
+      { path: 'profile', element: <UserProfile /> },
+      { path: 'tags', element: <Tags /> },
+      { path: 'teams', element: <Teams /> }
     ]
   },
   {

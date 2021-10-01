@@ -6,6 +6,8 @@ import fileTextFill from '@iconify/icons-eva/file-text-fill';
 import lockFill from '@iconify/icons-eva/lock-fill';
 import personAddFill from '@iconify/icons-eva/person-add-fill';
 import alertTriangleFill from '@iconify/icons-eva/alert-triangle-fill';
+import TagIcon from '@mui/icons-material/Tag';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 // ----------------------------------------------------------------------
 
@@ -17,46 +19,27 @@ const sidebarConfig = [
     path: '/dashboard/app',
     icon: getIcon(pieChart2Fill)
   },
-  // {
-  //   title: 'user',
-  //   path: '/dashboard/user',
-  //   icon: getIcon(peopleFill)
-  // },
+
   {
-    title: 'user',
+    title: 'users',
     path: '/dashboard/users',
     icon: getIcon(peopleFill)
   },
   {
     title: 'agent',
-    path: '/dashboard/agent',
+    path: '/dashboard/agents',
     icon: getIcon(peopleFill)
+  },
+  {
+    title: 'teams',
+    path: '/dashboard/teams',
+    icon: <GroupsIcon />
+  },
+  {
+    title: 'tags',
+    path: '/dashboard/tags',
+    icon: <TagIcon />
   }
-  // {
-  //   title: 'product',
-  //   path: '/dashboard/products',
-  //   icon: getIcon(shoppingBagFill)
-  // },
-  // {
-  //   title: 'blog',
-  //   path: '/dashboard/blog',
-  //   icon: getIcon(fileTextFill)
-  // }
-  // {
-  //   title: 'login',
-  //   path: '/login',
-  //   icon: getIcon(lockFill)
-  // },
-  // {
-  //   title: 'register',
-  //   path: '/register',
-  //   icon: getIcon(personAddFill)
-  // },
-  // {
-  //   title: 'Not found',
-  //   path: '/404',
-  //   icon: getIcon(alertTriangleFill)
-  // }
 ];
 
 export default sidebarConfig;

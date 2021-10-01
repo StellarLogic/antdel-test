@@ -36,7 +36,7 @@ export default function LoginForm() {
   const formik = useFormik({
     initialValues: {
       email: 'antdel@antdel.com',
-      password: '123456789'
+      password: '12345678'
       // remember: true
     },
     validationSchema: LoginSchema,
