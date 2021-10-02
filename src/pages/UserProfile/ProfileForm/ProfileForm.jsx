@@ -5,11 +5,14 @@ import * as Yup from 'yup';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { serialize } from 'object-to-formdata';
 // material
-import { Stack, TextField, Select, MenuItem } from '@material-ui/core';
+import { Stack, TextField, Select, MenuItem, FormControl, InputLabel } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
 import Grid from '@material-ui/core/Grid';
+import Autocomplete from '@mui/material/Autocomplete';
 
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { TextField as MuiTextField } from '@mui/material';
+import Box from '@mui/material/Box';
 import { useStyles } from './style';
 import { countryCode } from './contryCode';
 import { updateUserProfile } from '../../../actions/profile/profile';
@@ -18,26 +21,29 @@ import { updateUserProfile } from '../../../actions/profile/profile';
 
 const SUPPORTED_FORMATS = ['image/jpg', 'image/jpeg', 'image/png'];
 
-const ProfileForm = ({ user }) => {
+const ProfileForm = ({ user, url, config }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 
-  const LoginSchema = Yup.object().shape({
+  const validationSchema = Yup.object().shape({
+    // image: Yup.mixed()
+    //   .required('Image is required')
+    //   .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
+    //   .test(
+    //     'fileType',
+    //     'Unsupported File Format',
+    //     (value) => value && SUPPORTED_FORMATS.includes(value.type)
+    //   ),
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
+    name: Yup.string().required('Name is required'),
+    phone_country: Yup.string().required('Phone Country is required'),
     phone: Yup.string()
+      .min(10, 'Minimum 10 Digits')
+      .max(10, 'Maximum 10 Digits')
+      .required('Phone Number is required')
       .matches(phoneRegExp, 'Phone number is not valid')
-      .min(10, 'Invalid phone')
-      .max(10, 'Invalid phone'),
-    image: Yup.mixed()
-      .required('Image is required')
-      .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
-      .test(
-        'fileType',
-        'Unsupported File Format',
-        (value) => value && SUPPORTED_FORMATS.includes(value.type)
-      )
   });
 
   const formik = useFormik({
@@ -46,22 +52,22 @@ const ProfileForm = ({ user }) => {
       email: user.email,
       phone_country_id: user.phone_country_id,
       phone: user.phone,
-      image: user.image
+      image: null
     },
-    validationSchema: LoginSchema,
-
+    validationSchema,
+    enableReinitialize: true,
     onSubmit: ({ name, email, phone_country_id, phone, image }) => {
       const payload = {
         name,
         email,
         phone_country_id,
-        phone,
-        image
+        phone
       };
+      if (image) payload.image = image;
 
       const formData = serialize(payload);
-
-      dispatch(updateUserProfile(formData)).then((res) => {
+      console.log(`submit`);
+      return dispatch(updateUserProfile(formData)).then((res) => {
         if (res) formik.setSubmitting(false);
       });
     }
@@ -77,7 +83,7 @@ const ProfileForm = ({ user }) => {
     getFieldProps,
     setFieldValue
   } = formik;
-  console.log(`values`, values.image);
+  console.log(`values`, values);
   const form = (
     <div className={classes.formContainer}>
       <FormikProvider value={formik}>
@@ -104,7 +110,9 @@ const ProfileForm = ({ user }) => {
                 </div>
               </Grid>
               <Grid item xs={12} md={6}>
-                {values.image && typeof values.image !== 'string' && (
+                {!values.image ? (
+                  <img src={`${url}/${user.image}`} alt="avatar" className={classes.imagePreview} />
+                ) : (
                   <img
                     src={URL.createObjectURL(values.image)}
                     alt="avatar"
@@ -133,45 +141,32 @@ const ProfileForm = ({ user }) => {
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <Grid container spacing={3}>
-                  <Grid item xs={4} md={3}>
-                    {/* <TextField
-                      fullWidth
-                      type="phone_country_id"
-                      label="Country Code"
-                      {...getFieldProps('phone_country_id')}
-                      error={Boolean(touched.phone_country_id && errors.phone_country_id)}
-                      helperText={touched.phone_country_id && errors.phone_country_id}
-                    /> */}
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="phone_country_id"
-                      // value={countryCode.find((country) => country.name === 'India')?.code}
-                      value={
-                        // values.phone_country_id ||
-                        countryCode.find((country) => country.name === 'India')?.code
-                      }
-                      label="Country Code"
-                      // onChange={handleChange}
-                    >
-                      {countryCode.map((country) => (
-                        <MenuItem key={country.code} value={country.code}>
-                          {country.code}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </Grid>
-                  <Grid item xs={8} md={9}>
-                    <TextField
-                      fullWidth
-                      type="text"
-                      label="Phone Number"
-                      {...getFieldProps('phone')}
-                      error={Boolean(touched.phone && errors.phone)}
-                      helperText={touched.phone && errors.phone}
-                    />
-                  </Grid>
-                </Grid>
+                <FormControl fullWidth>
+                  <InputLabel id="phone-code-simple-select-label">Phone Code</InputLabel>
+                  <Select
+                    labelId="phone-code-simple-select-label"
+                    id="phone-code-simple-select"
+                    value={values.phone_country_id}
+                    label="Age"
+                    {...getFieldProps('phone_country_id')}
+                  >
+                    {config?.countries?.list.map((country) => (
+                      <MenuItem value={country.calling_code} key={country.id}>
+                        {country.name}({country.calling_code})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="text"
+                  label="Phone Number"
+                  {...getFieldProps('phone')}
+                  error={Boolean(touched.phone && errors.phone)}
+                  helperText={touched.phone && errors.phone}
+                />
               </Grid>
             </Grid>
           </Stack>
@@ -196,6 +191,8 @@ const ProfileForm = ({ user }) => {
 };
 
 const mapStateToProps = (state) => ({
-  user: state.auth.user
+  config: state.config,
+  user: state.auth.user,
+  url: state.config.url
 });
 export default connect(mapStateToProps)(ProfileForm);

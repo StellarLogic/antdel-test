@@ -40,6 +40,7 @@ export default function AccountPopover() {
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
   const auth = useSelector((state) => state.auth);
+  const url = useSelector((state) => state.config.url);
   const dispatch = useDispatch();
 
   const handleOpen = () => {
@@ -49,7 +50,7 @@ export default function AccountPopover() {
     setOpen(false);
   };
 
-  const { name, email } = auth?.user;
+  const { name, email, image } = auth?.user;
 
   return (
     <>
@@ -73,7 +74,7 @@ export default function AccountPopover() {
           })
         }}
       >
-        <Avatar src={account.photoURL} alt="photoURL" />
+        <Avatar src={`${url}/${image}`} alt="photoURL" />
       </IconButton>
 
       <MenuPopover

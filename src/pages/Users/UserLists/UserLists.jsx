@@ -27,13 +27,13 @@ import plusFill from '@iconify/icons-eva/plus-fill';
 import { Icon } from '@iconify/react';
 // components
 import { useDispatch, connect } from 'react-redux';
+import { serialize } from 'object-to-formdata';
 import { deleteUser, getUserListing } from '../../../actions/users/users';
 import Page from '../../../components/Page';
 import Label from '../../../components/Label';
 import Scrollbar from '../../../components/Scrollbar';
 import SearchNotFound from '../../../components/SearchNotFound';
 import { UserListHead, UserListToolbar, UserMoreMenu } from '../../../components/_dashboard/user';
-
 import dummy from '../data';
 import { useStyles } from './style';
 import RowSkeleton from './RowSkeleton';
@@ -77,6 +77,7 @@ const TABLE_HEAD = [
 
 const UsersList = ({
   handleUserModal,
+  url,
   users: {
     loading,
     data: { rows: users, count, total_page }
@@ -150,9 +151,12 @@ const UsersList = ({
   const isUserNotFound = filteredUsers.length === 0;
 
   const handleDelete = (id) => {
-    console.log(`id`, id);
-    const updatedList = users.filter((user) => user.id !== id);
-    dispatch(deleteUser(id, updatedList));
+    deleteUser(id).then((res) => {
+      console.log(`res`, res);
+      if (res.status === 1) {
+        dispatch(getUserListing(0, 10));
+      }
+    });
   };
 
   // if (loading) return <p>Loading</p>;
@@ -179,7 +183,7 @@ const UsersList = ({
                 // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 users &&
                 users.map((row, index) => {
-                  const { id, name, user_name, email, phone, phone_country_id } = row;
+                  const { id, name, user_name, email, image, phone, phone_country_id } = row;
                   const { avatar } = dummy[1];
                   const isItemSelected = selected.indexOf(name) !== -1;
                   return (
@@ -199,7 +203,7 @@ const UsersList = ({
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
                         <Stack direction="row" alignItems="center" spacing={2}>
-                          <Avatar alt={name} src={avatar} />
+                          <Avatar alt={name} src={`${url}/${image}`} />
                           <Typography variant="subtitle2" noWrap>
                             {name}
                           </Typography>
@@ -280,11 +284,13 @@ const UsersList = ({
 
 UsersList.propTypes = {
   users: PropTypes.object,
-  handleUserModal: PropTypes.func
+  handleUserModal: PropTypes.func,
+  url: PropTypes.string
 };
 
 const mapStateToProps = (state) => ({
-  users: state.users
+  users: state.users,
+  url: state.config.url
 });
 
 export default connect(mapStateToProps)(UsersList);

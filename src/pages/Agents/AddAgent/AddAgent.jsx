@@ -22,9 +22,14 @@ import {
   CardContent,
   InputLabel,
   Typography,
-  Button
+  Button,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  FormControl
 } from '@material-ui/core';
 import { useAutocomplete } from '@mui/core/AutocompleteUnstyled';
+import { FaTruck } from 'react-icons/fa';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { LoadingButton } from '@material-ui/lab';
@@ -33,6 +38,10 @@ import Box from '@mui/material/Box';
 import Autocomplete from '@mui/material/Autocomplete';
 import { TextField as MuiTextField } from '@mui/material';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import TwoWheelerIcon from '@mui/icons-material/TwoWheeler';
+import PedalBikeIcon from '@mui/icons-material/PedalBike';
+import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
 import { tags } from './tags';
 import { useStyles, Label, InputWrapper, Listbox, StyledTag, Android12Switch } from './style';
 import { addAgent, getAgentListing } from '../../../actions/agent/agent';
@@ -59,7 +68,7 @@ const initialValues = {
   phone: '',
   password: '',
   assign_team: '',
-  agent_permission: '',
+  agent_permission: '2',
   is_vat: false,
   image: '',
   vat_image: '',
@@ -334,14 +343,6 @@ const AddAgent = ({ config, handleClose, id, agents, countries }) => {
               {/* </Grid> */}
               {/* </Grid> */}
               <Grid item xs={12} md={6}>
-                {/* <TextField
-                  fullWidth
-                  type="text"
-                  label="Assigned Team"
-                  {...getFieldProps('assign_team')}
-                  error={Boolean(touched.assign_team && errors.assign_team)}
-                  helperText={touched.assign_team && errors.assign_team}
-                /> */}
                 <InputLabel id="assign_team">Assigned Team</InputLabel>
                 <Select
                   labelId="assign_team"
@@ -349,22 +350,6 @@ const AddAgent = ({ config, handleClose, id, agents, countries }) => {
                   label="Assigned Team"
                   onChange={(e) => handleSelectChange(e, 'assign_team')}
                   placeholder="Assigned Team"
-                  // autoWidth
-                  className={classes.select}
-                >
-                  {config.teams.list.map((team) => (
-                    <MenuItem value={team.id}>{team.name}</MenuItem>
-                  ))}
-                </Select>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <InputLabel id="agent_permission">Assigned Team</InputLabel>
-                <Select
-                  labelId="agent_permission"
-                  id="agent_permission"
-                  label="Agent Permission"
-                  onChange={(e) => handleSelectChange(e, 'agent_permission')}
-                  placeholder="Agent Permission"
                   // autoWidth
                   className={classes.select}
                 >
@@ -434,6 +419,46 @@ const AddAgent = ({ config, handleClose, id, agents, countries }) => {
                     </Listbox>
                   ) : null}
                 </div>
+              </Grid>
+              <Grid item xs={12} md={12}>
+                <FormControl component="fieldset">
+                  <FormLabel component="legend">Agent Permission</FormLabel>
+                  <RadioGroup
+                    row
+                    aria-label="agent_Permission"
+                    name="row-radio-buttons-group"
+                    value={`${values.agent_permission}`}
+                    // onChange={(value) => console.log(`value`, value)}
+                    {...getFieldProps('agent_permission')}
+                  >
+                    <FormControlLabel value="0" control={<Radio />} label="Agent Can’t Access" />
+                    <FormControlLabel value="1" control={<Radio />} label="Agent View Only" />
+                    <FormControlLabel value="2" control={<Radio />} label="Agent Can View & Edit" />
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={12}>
+                <FormControl component="fieldset">
+                  <FormLabel component="legend">Agent Permission</FormLabel>
+                  <RadioGroup
+                    row
+                    aria-label="agent_Permission"
+                    name="row-radio-buttons-group"
+                    value={`${values.transport_type}`}
+                    {...getFieldProps('agent_permission')}
+                  >
+                    <FormControlLabel value="0" control={<Radio />} label={<LocalShippingIcon />} />
+                    <FormControlLabel value="1" control={<Radio />} label={<TwoWheelerIcon />} />
+                    <FormControlLabel value="2" control={<Radio />} label={<PedalBikeIcon />} />
+                    <FormControlLabel
+                      value="0"
+                      control={<Radio />}
+                      label={<DirectionsWalkIcon />}
+                    />
+                    <FormControlLabel value="1" control={<Radio />} label={<FaTruck />} />
+                    <FormControlLabel value="2" control={<Radio />} label={<TwoWheelerIcon />} />
+                  </RadioGroup>
+                </FormControl>
               </Grid>
             </Grid>
           </Stack>

@@ -77,6 +77,7 @@ const TABLE_HEAD = [
 
 const AgentList = ({
   handleAgentModal,
+  url,
   agents: {
     loading,
     data: { rows: agents, count, total_page }
@@ -179,7 +180,7 @@ const AgentList = ({
                 // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 agents &&
                 agents.map((row, index) => {
-                  const { id, name, user_name, email, phone, phone_country_id } = row;
+                  const { id, name, user_name, image, email, phone, phone_country_id } = row;
                   const { avatar } = dummy[1];
                   const isItemSelected = selected.indexOf(name) !== -1;
                   return (
@@ -199,7 +200,7 @@ const AgentList = ({
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
                         <Stack direction="row" alignItems="center" spacing={2}>
-                          <Avatar alt={name} src={avatar} />
+                          <Avatar alt={name} src={`${url}/${image}`} />
                           <Typography variant="subtitle2" noWrap>
                             {name}
                           </Typography>
@@ -280,11 +281,13 @@ const AgentList = ({
 
 AgentList.propTypes = {
   agents: PropTypes.object,
-  handleAgentModal: PropTypes.func
+  handleAgentModal: PropTypes.func,
+  url: PropTypes.string
 };
 
 const mapStateToProps = (state) => ({
-  agents: state.agents
+  agents: state.agents,
+  url: state.config.url
 });
 
 export default connect(mapStateToProps)(AgentList);

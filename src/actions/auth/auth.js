@@ -53,3 +53,28 @@ export const forgotPasswordReset = (key, payload) => async (dispatch) => {
     console.log(error);
   }
 };
+
+export const getRefreshToken = async (dispatch) => {
+  try {
+    const { token } = localStorage;
+    const { data } = await axios.get('/user/refresh-token', {
+      headers: {
+        Authorization: token
+      }
+    });
+    // const callBack = () => {
+    // if (data.status !== 1) {
+    //   localStorage.clear();
+    //   return store.dispatch({
+    //     type: LOG_OUT
+    //   });
+    // }
+
+    // localStorage.setItem('token', res?.data?.token);
+    // };
+
+    // return handleResponseError(data, { callBack, showAlert: true });
+  } catch (error) {
+    console.log(error);
+  }
+};

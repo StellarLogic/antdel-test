@@ -61,9 +61,7 @@ export const deleteAgent = (agentId, updatedList) => async (dispatch) => {
         payload: { rows: updatedList }
       });
 
-    handleResponseError(data, callBack);
-
-    return data;
+    return handleResponseError(data, callBack);
   } catch (error) {
     return console.log(`error`, error);
   }

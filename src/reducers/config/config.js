@@ -7,6 +7,7 @@ import {
 } from '../../actions/action-type';
 
 const initialState = {
+  url: process.env.REACT_APP_BASEURL,
   tags: {
     loading: true,
     list: []

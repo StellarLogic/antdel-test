@@ -5,9 +5,10 @@ import { handleResponseError } from '../../utils/handleResponseError';
 export const addUser = async (payload) => {
   try {
     const { data } = await axios.post(`/user/user_register`, payload);
-    handleResponseError(data);
 
-    return data;
+    return handleResponseError(data, {
+      showAlert: true
+    });
   } catch (error) {
     return console.log(`error`, error);
   }
@@ -58,19 +59,11 @@ export const getUserListing = (currentPage, perPage) => async (dispatch) => {
   }
 };
 
-export const deleteUser = (agentId, updatedList) => async (dispatch) => {
+export const deleteUser = async (id) => {
   try {
-    const { data } = await axios.delete(`/user/user_delete`, { data: { id: agentId } });
-
-    const callBack = () =>
-      dispatch({
-        type: DELETE_USER,
-        payload: { rows: updatedList }
-      });
-
-    handleResponseError(data, callBack);
-
-    return data;
+    const { data } = await axios.delete(`/user/user_delete`, { data: { id } });
+    console.log(`data`, data);
+    return handleResponseError(data, { showAlert: true });
   } catch (error) {
     return console.log(`error`, error);
   }

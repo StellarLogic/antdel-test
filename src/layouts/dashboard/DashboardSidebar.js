@@ -35,7 +35,7 @@ const AccountStyle = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-const DashboardSidebar = ({ isOpenSidebar, onCloseSidebar, auth }) => {
+const DashboardSidebar = ({ isOpenSidebar, onCloseSidebar, auth, url }) => {
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const DashboardSidebar = ({ isOpenSidebar, onCloseSidebar, auth }) => {
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none" component={RouterLink} to="/dashboard/profile">
           <AccountStyle>
-            <Avatar src={account.photoURL} alt="photoURL" />
+            <Avatar src={`${url}/${auth?.user?.image}`} alt="photoURL" />
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                 {auth?.user?.name}
@@ -151,11 +151,13 @@ const DashboardSidebar = ({ isOpenSidebar, onCloseSidebar, auth }) => {
 
 DashboardSidebar.propTypes = {
   isOpenSidebar: PropTypes.bool,
-  onCloseSidebar: PropTypes.func
+  onCloseSidebar: PropTypes.func,
+  url: PropTypes.string
 };
 
 const mapStateToProps = (state) => ({
-  auth: state.auth
+  auth: state.auth,
+  url: state.config.url
 });
 
 export default connect(mapStateToProps)(DashboardSidebar);

@@ -53,13 +53,11 @@ export const updateUserProfile = (payload) => async (dispatch) => {
       });
     };
 
-    handleResponseError(data, callBack);
-
-    return data;
+    return handleResponseError(data, { callBack, showAlert: true });
   } catch (error) {
     console.log(`error`, error);
-    const { data } = error.response;
-    if (data?.error) return data.error.map((error) => notification.error(error?.msg));
+
+    // if (data?.error) return data.error.map((error) => notification.error(error?.msg));
   }
 };
 
