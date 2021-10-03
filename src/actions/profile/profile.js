@@ -45,15 +45,10 @@ export const updateUserProfile = (payload) => async (dispatch) => {
     const { data } = await axios.post(`/user/update-profile`, payload);
 
     const callBack = () => {
-      dispatch({
-        type: UPDATE_USER_PROFILE,
-        payload: {
-          user: data?.data
-        }
-      });
+      dispatch(getUserProfile);
     };
 
-    return handleResponseError(data, { callBack, showAlert: true });
+    handleResponseError(data, { callBack, showAlert: true });
   } catch (error) {
     console.log(`error`, error);
 

@@ -28,17 +28,19 @@ const ProfileForm = ({ user, url, config }) => {
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 
   const validationSchema = Yup.object().shape({
-    // image: Yup.mixed()
-    //   .required('Image is required')
-    //   .test('fileSize', 'File Size is too large', (value) => value && value.size <= 2 * 1024 * 1024)
-    //   .test(
-    //     'fileType',
-    //     'Unsupported File Format',
-    //     (value) => value && SUPPORTED_FORMATS.includes(value.type)
-    //   ),
+    image: Yup.mixed()
+      // .required('Image is required')
+      .test('fileSize', 'File Size is too large', (value) => {
+        if (!value) return true;
+        return value && value.size <= 2 * 1024 * 1024;
+      })
+      .test('fileType', 'Unsupported File Format', (value) => {
+        if (!value) return true;
+        return value && SUPPORTED_FORMATS.includes(value.type);
+      }),
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
     name: Yup.string().required('Name is required'),
-    phone_country: Yup.string().required('Phone Country is required'),
+    phone_country_id: Yup.string().required('Phone Country is required'),
     phone: Yup.string()
       .min(10, 'Minimum 10 Digits')
       .max(10, 'Maximum 10 Digits')
@@ -52,10 +54,10 @@ const ProfileForm = ({ user, url, config }) => {
       email: user.email,
       phone_country_id: user.phone_country_id,
       phone: user.phone,
-      image: null
+      image: ''
     },
     validationSchema,
-    enableReinitialize: true,
+    // enableReinitialize: true,
     onSubmit: ({ name, email, phone_country_id, phone, image }) => {
       const payload = {
         name,
@@ -63,10 +65,10 @@ const ProfileForm = ({ user, url, config }) => {
         phone_country_id,
         phone
       };
+
       if (image) payload.image = image;
 
       const formData = serialize(payload);
-      console.log(`submit`);
       return dispatch(updateUserProfile(formData)).then((res) => {
         if (res) formik.setSubmitting(false);
       });
@@ -83,7 +85,7 @@ const ProfileForm = ({ user, url, config }) => {
     getFieldProps,
     setFieldValue
   } = formik;
-  console.log(`values`, values);
+  // console.log(`values`, values);
   const form = (
     <div className={classes.formContainer}>
       <FormikProvider value={formik}>
