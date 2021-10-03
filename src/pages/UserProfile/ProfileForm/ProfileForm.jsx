@@ -62,7 +62,7 @@ const ProfileForm = ({ user, url, config }) => {
       const payload = {
         name,
         email,
-        phone_country_id,
+        phone_country: phone_country_id,
         phone
       };
 
